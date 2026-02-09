@@ -18,7 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
 import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
-import { Scan } from 'lucide-react';
+import { Camera, Scan } from 'lucide-react';
+import { QrScanner } from '@/components/qr-scanner';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -29,6 +30,7 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] =
     React.useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isScanning, setIsScanning] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,6 +60,44 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  const handleScanSuccess = React.useCallback(
+    (decodedText: string) => {
+      form.setValue('qrContent', decodedText);
+      setIsScanning(false);
+      toast({
+        title: 'QR Code Scanned',
+        description: 'Content has been pasted into the text area.',
+      });
+    },
+    [form, toast]
+  );
+
+  const handleScanCancel = React.useCallback(() => {
+    setIsScanning(false);
+  }, []);
+
+  if (isScanning) {
+    return (
+      <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-2xl">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground flex items-center justify-center gap-3">
+              <Camera className="w-10 h-10 text-primary" />
+              Scan QR Code
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Point your camera at a QR code.
+            </p>
+          </div>
+          <QrScanner
+            onScanSuccess={handleScanSuccess}
+            onCancel={handleScanCancel}
+          />
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -91,13 +131,26 @@ export default function Home() {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              className="w-full text-lg"
-              disabled={isLoading}
-            >
-              Analyze
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                type="submit"
+                className="flex-1 text-lg"
+                disabled={isLoading}
+              >
+                <Scan className="mr-2 h-5 w-5" />
+                Analyze
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 text-lg"
+                onClick={() => setIsScanning(true)}
+                disabled={isLoading}
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                Scan with Camera
+              </Button>
+            </div>
           </form>
         </Form>
 

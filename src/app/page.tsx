@@ -27,6 +27,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -50,6 +60,8 @@ export default function Home() {
   const [scanHistory, setScanHistory] = React.useState<AnalysisResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(false);
+  const [latestAnalysis, setLatestAnalysis] =
+    React.useState<AnalysisResult | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +79,7 @@ export default function Home() {
           setScanHistory((prevHistory) =>
             [result, ...prevHistory].slice(0, 10)
           );
+          setLatestAnalysis(result);
         } else {
           throw new Error('Analysis failed to return a result.');
         }
@@ -90,12 +103,8 @@ export default function Home() {
       setIsScanning(false);
       form.setValue('qrContent', decodedText);
       await onSubmit({ qrContent: decodedText });
-      toast({
-        title: 'QR Code Scanned & Analyzed',
-        description: 'The analysis result has been added to your history.',
-      });
     },
-    [form, toast, onSubmit]
+    [form, onSubmit]
   );
 
   const handleScanCancel = React.useCallback(() => {
@@ -180,12 +189,41 @@ export default function Home() {
 
         <div className="mt-8">
           {isLoading && (
-            <AnalysisResultDisplay
-              result={null}
-              isLoading={true}
-            />
+            <AnalysisResultDisplay result={null} isLoading={true} />
           )}
         </div>
+
+        {latestAnalysis && (
+          <AlertDialog
+            open={!!latestAnalysis}
+            onOpenChange={(isOpen) => !isOpen && setLatestAnalysis(null)}
+          >
+            <AlertDialogContent className="max-w-xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Analysis Complete</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Here is a summary of the QR code content.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AnalysisResultDisplay result={latestAnalysis} isLoading={false} />
+              <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+                {latestAnalysis.type === 'Website' &&
+                  latestAnalysis.qrContent.startsWith('http') && (
+                    <AlertDialogAction asChild>
+                      <a
+                        href={latestAnalysis.qrContent}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Visit Website
+                      </a>
+                    </AlertDialogAction>
+                  )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         {scanHistory.length > 0 && (
           <div className="mt-8 w-full">

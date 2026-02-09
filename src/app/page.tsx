@@ -379,7 +379,7 @@ export default function Home() {
               <AnalysisResultDisplay result={activeAnalysis} isLoading={false} />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel className="border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground">Close</AlertDialogCancel>
+              <AlertDialogCancel className="border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground">Go Back</AlertDialogCancel>
               {activeAnalysis.type === 'Website' &&
                 activeAnalysis.qrContent.startsWith('http') && (
                   <AlertDialogAction asChild>

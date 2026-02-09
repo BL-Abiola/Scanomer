@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 
 interface QrScannerProps {
@@ -12,24 +12,40 @@ const qrcodeRegionId = "qr-code-reader";
 
 export function QrScanner({ onScanSuccess, onCancel }: QrScannerProps) {
   useEffect(() => {
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      qrcodeRegionId,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-      },
-      false
-    );
+    const html5QrCode = new Html5Qrcode(qrcodeRegionId, /* verbose= */ false);
+    let isScannerStopped = false;
 
-    const handleSuccess = (decodedText: string) => {
-      html5QrcodeScanner.clear();
-      onScanSuccess(decodedText);
+    const qrCodeSuccessCallback = (decodedText: string) => {
+        if (!isScannerStopped) {
+            onScanSuccess(decodedText);
+        }
     };
 
-    html5QrcodeScanner.render(handleSuccess, () => {});
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+      qrCodeSuccessCallback,
+      undefined // qrCodeErrorCallback
+    ).catch((err) => {
+      console.log("Unable to start scanning with back camera, trying another camera.", err);
+      // Fallback to any available camera
+      html5QrCode.start(
+          {},
+          config,
+          qrCodeSuccessCallback,
+          undefined
+      ).catch(err2 => {
+          console.error("Failed to start QR code scanner with any camera.", err2)
+      })
+    });
 
     return () => {
-      html5QrcodeScanner.clear().catch(() => {});
+        isScannerStopped = true;
+        html5QrCode.stop().catch((err) => {
+            console.error("Failed to stop QR code scanner.", err);
+        });
     };
   }, [onScanSuccess]);
 

@@ -214,8 +214,8 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="container mx-auto grid max-w-8xl grid-cols-1 gap-x-12 gap-y-10 px-4 pt-24 pb-8 lg:grid-cols-5">
-          <div className="lg:col-span-3">
+        <main className="container mx-auto grid max-w-3xl grid-cols-1 gap-y-10 px-4 pt-24 pb-8">
+          <div className="w-full">
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
@@ -297,48 +297,46 @@ export default function Home() {
             </Card>
           </div>
 
-          <aside className="lg:col-span-2">
-            <div className="sticky top-24">
-              <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <History className="h-6 w-6" />
-                    <span className="text-xl font-semibold">Scan History</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading && scanHistory.length === 0 ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
-                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
-                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+          <aside className="w-full">
+            <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <History className="h-6 w-6" />
+                  <span className="text-xl font-semibold">Scan History</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading && scanHistory.length === 0 ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                  </div>
+                ) : scanHistory.length > 0 ? (
+                  <ScrollArea className="h-[400px] pr-4">
+                    <div className="space-y-3">
+                      {scanHistory.map((item, index) => (
+                        <HistoryItem
+                          key={`${item.qrContent}-${index}`}
+                          item={item}
+                          onClick={() => handleHistoryItemClick(item)}
+                        />
+                      ))}
                     </div>
-                  ) : scanHistory.length > 0 ? (
-                    <ScrollArea className="h-[calc(100vh-280px)] pr-4">
-                      <div className="space-y-3">
-                        {scanHistory.map((item, index) => (
-                          <HistoryItem
-                            key={`${item.qrContent}-${index}`}
-                            item={item}
-                            onClick={() => handleHistoryItemClick(item)}
-                          />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="flex h-[calc(100vh-280px)] flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/10 bg-white/5 p-8 text-center">
-                      <History className="h-12 w-12 text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-semibold">
-                        No Scans Yet
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Your recent scans will appear here.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/10 bg-white/5 p-8 text-center">
+                    <History className="h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">
+                      No Scans Yet
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Your recent scans will appear here.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </aside>
         </main>
       </div>

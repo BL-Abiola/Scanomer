@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import dynamic from 'next/dynamic';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -19,11 +20,24 @@ import type { AnalysisResult } from '@/lib/types';
 import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Camera, Scan } from 'lucide-react';
-import { QrScanner } from '@/components/qr-scanner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
 });
+
+const QrScanner = dynamic(
+  () => import('@/components/qr-scanner').then((mod) => mod.QrScanner),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="aspect-square w-full rounded-md" />
+        <Skeleton className="h-11 w-full rounded-md" />
+      </div>
+    ),
+  }
+);
 
 export default function Home() {
   const { toast } = useToast();

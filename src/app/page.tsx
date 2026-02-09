@@ -47,8 +47,6 @@ const QrScanner = dynamic(
 
 export default function Home() {
   const { toast } = useToast();
-  const [analysisResult, setAnalysisResult] =
-    React.useState<AnalysisResult | null>(null);
   const [scanHistory, setScanHistory] = React.useState<AnalysisResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(false);
@@ -63,11 +61,9 @@ export default function Home() {
   const onSubmit = React.useCallback(
     async (values: z.infer<typeof formSchema>) => {
       setIsLoading(true);
-      setAnalysisResult(null);
       try {
         const result = await analyzeAction(values.qrContent);
         if (result) {
-          setAnalysisResult(result);
           setScanHistory((prevHistory) =>
             [result, ...prevHistory].slice(0, 10)
           );
@@ -96,7 +92,7 @@ export default function Home() {
       await onSubmit({ qrContent: decodedText });
       toast({
         title: 'QR Code Scanned & Analyzed',
-        description: 'The analysis result is now displayed.',
+        description: 'The analysis result has been added to your history.',
       });
     },
     [form, toast, onSubmit]
@@ -183,10 +179,10 @@ export default function Home() {
         </Form>
 
         <div className="mt-8">
-          {(isLoading || analysisResult) && (
+          {isLoading && (
             <AnalysisResultDisplay
-              result={analysisResult}
-              isLoading={isLoading}
+              result={null}
+              isLoading={true}
             />
           )}
         </div>

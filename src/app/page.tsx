@@ -264,7 +264,7 @@ export default function Home() {
                                         <FormControl>
                                             <Textarea
                                                 placeholder="Paste raw QR code content..."
-                                                className="min-h-[120px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
+                                                className="min-h-[80px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
                                                 {...field}
                                             />
                                         </FormControl>

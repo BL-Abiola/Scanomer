@@ -176,9 +176,6 @@ export default function Home() {
               <Camera className="h-8 w-8" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight">Scan QR Code</h1>
-            <p className="mt-2 text-muted-foreground">
-              Center the QR code within the frame to scan it.
-            </p>
           </header>
           <QrScanner
             onScanSuccess={handleScanSuccess}

@@ -45,6 +45,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogFooter,
@@ -77,6 +78,7 @@ export default function Home() {
   const [activeAnalysis, setActiveAnalysis] =
     React.useState<AnalysisResult | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -133,7 +135,13 @@ export default function Home() {
     const file = event.target.files[0];
     if (!file) return;
 
-    const html5QrCode = new Html5Qrcode("file-scanner", false);
+    // A hidden element used by the html5-qrcode library
+    const fileScannerElement = document.createElement('div');
+    fileScannerElement.id = 'file-scanner';
+    fileScannerElement.style.display = 'none';
+    document.body.appendChild(fileScannerElement);
+    
+    const html5QrCode = new Html5Qrcode("file-scanner");
     
     setIsLoading(true);
     setActiveAnalysis(null);
@@ -154,6 +162,7 @@ export default function Home() {
         if (event.target) {
             event.target.value = '';
         }
+        document.body.removeChild(fileScannerElement);
     }
   };
 
@@ -214,37 +223,24 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="lg"
-                            onClick={() => setIsScanning(true)}
-                            disabled={isLoading}
-                            className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
-                        >
-                            <Camera className="h-10 w-10" />
-                            <span>Scan with Camera</span>
-                        </Button>
-                         <Button
-                            type="button"
-                            variant="outline"
-                            size="lg"
-                            onClick={handleUploadClick}
-                            disabled={isLoading}
-                            className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
-                        >
-                            <FileUp className="h-10 w-10" />
-                            <span>Upload from Image</span>
-                        </Button>
-                         <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
-                            accept="image/*"
-                            className="hidden"
-                         />
-                    </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setIsSelectionDialogOpen(true)}
+                        disabled={isLoading}
+                        className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                    >
+                        <Camera className="h-10 w-10" />
+                        <span>Scan or Upload</span>
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                    />
 
                     <div className="flex items-center gap-4">
                         <div className="flex-grow border-t border-white/10"></div>
@@ -347,6 +343,27 @@ export default function Home() {
         </main>
       </div>
 
+      <AlertDialog open={isSelectionDialogOpen} onOpenChange={setIsSelectionDialogOpen}>
+        <AlertDialogContent className="border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <AlertDialogHeader>
+                <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
+                <AlertDialogDescription>
+                    How would you like to provide the QR code?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="grid grid-cols-1 gap-2 pt-4 sm:grid-cols-2">
+                <Button onClick={() => { setIsScanning(true); setIsSelectionDialogOpen(false); }}>
+                    <Camera className="mr-2 h-4 w-4" />
+                    Use Camera
+                </Button>
+                <Button variant="secondary" onClick={() => { handleUploadClick(); setIsSelectionDialogOpen(false); }}>
+                    <FileUp className="mr-2 h-4 w-4" />
+                    Upload Image
+                </Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {activeAnalysis && (
         <AlertDialog
           open={!!activeAnalysis}
@@ -444,5 +461,3 @@ const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
     default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };
-
-    

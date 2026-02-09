@@ -9,7 +9,6 @@ import {
   QrCode,
   Camera,
   History,
-  ScanLine,
   ChevronRight,
   Globe,
   CreditCard,
@@ -21,6 +20,7 @@ import {
   FileText,
   AlertCircle,
   Sparkles,
+  FileUp,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -46,7 +46,6 @@ import {
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -175,66 +174,85 @@ export default function Home() {
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
-                <CardDescription>Paste raw QR code text or use the camera to scan.</CardDescription>
+                <CardDescription>Scan a QR code from your camera, an image, or paste the content below.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="qrContent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="sr-only">
-                            QR Code Content
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="e.g. https://example.com"
-                              className="min-h-[150px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex flex-col gap-4 sm:flex-row sm:justify-start">
-                      <Button
-                        type="submit"
-                        size="lg"
-                        disabled={isLoading}
-                        className="w-full sm:w-auto"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="mr-2 h-5 w-5" />
-                            Analyze Content
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsScanning(true)}
-                        disabled={isLoading}
-                         className="w-full border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground sm:w-auto"
-                      >
-                        <Camera className="mr-2 h-5 w-5" />
-                        Scan with Camera
-                      </Button>
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsScanning(true)}
+                            disabled={isLoading}
+                            className="flex h-40 flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                        >
+                            <Camera className="h-10 w-10" />
+                            <span>Scan with Camera</span>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            disabled={true}
+                            className="flex h-40 cursor-not-allowed flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                        >
+                            <FileUp className="h-10 w-10" />
+                            <span>Upload Image</span>
+                        </Button>
                     </div>
-                  </form>
-                </Form>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex-grow border-t border-white/10"></div>
+                        <span className="text-sm text-muted-foreground">OR</span>
+                        <div className="flex-grow border-t border-white/10"></div>
+                    </div>
+
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-4"
+                        >
+                            <FormField
+                                control={form.control}
+                                name="qrContent"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="sr-only">
+                                            QR Code Content
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Paste raw QR code content..."
+                                                className="min-h-[120px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button
+                                type="submit"
+                                size="lg"
+                                disabled={isLoading}
+                                className="w-full"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                                        Analyzing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="mr-2 h-5 w-5" />
+                                        Analyze Content
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -382,3 +400,5 @@ const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
     default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };
+
+    

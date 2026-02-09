@@ -20,10 +20,11 @@ import {
   Download,
   FileText,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -49,6 +50,7 @@ import {
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -153,23 +155,29 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen w-full bg-muted/30">
-        <main className="container mx-auto grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <header className="mb-8 flex items-center gap-4">
-                <QrCode className="h-10 w-10 rounded-lg bg-primary p-2 text-primary-foreground" />
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">
-                  ScanWise
-                </h1>
-                <p className="mt-1 text-muted-foreground">
-                  A Neutral QR Code Interpretation Engine
-                </p>
-              </div>
-            </header>
+      <div className="min-h-screen w-full">
+        <header className="fixed top-0 left-0 right-0 z-20 border-b border-white/10 bg-background/80 backdrop-blur-lg">
+          <div className="container mx-auto flex h-16 max-w-8xl items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <QrCode className="h-8 w-8 text-primary" />
+              <h1 className="text-xl font-bold tracking-tight">
+                ScanWise
+              </h1>
+            </div>
+             <p className="hidden text-sm text-muted-foreground md:block">
+                A Neutral QR Code Interpretation Engine
+              </p>
+          </div>
+        </header>
 
-            <Card className="shadow-sm">
-              <CardContent className="p-6">
+        <main className="container mx-auto grid max-w-8xl grid-cols-1 gap-x-12 gap-y-10 px-4 pt-24 pb-8 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
+                <CardDescription>Paste raw QR code text or use the camera to scan.</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -180,13 +188,13 @@ export default function Home() {
                       name="qrContent"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">
+                          <FormLabel className="sr-only">
                             QR Code Content
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Paste raw QR code text here, or use the camera to scan."
-                              className="min-h-[120px] resize-none rounded-md border-input bg-background text-base focus:border-primary"
+                              placeholder="e.g. https://example.com"
+                              className="min-h-[150px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
                               {...field}
                             />
                           </FormControl>
@@ -194,20 +202,21 @@ export default function Home() {
                         </FormItem>
                       )}
                     />
-                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-start">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:justify-start">
                       <Button
                         type="submit"
                         size="lg"
                         disabled={isLoading}
+                        className="w-full sm:w-auto"
                       >
                         {isLoading ? (
                           <>
-                            <ScanLine className="mr-2 h-5 w-5 animate-spin" />
+                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
                             Analyzing...
                           </>
                         ) : (
                           <>
-                            <ScanLine className="mr-2 h-5 w-5" />
+                            <Sparkles className="mr-2 h-5 w-5" />
                             Analyze Content
                           </>
                         )}
@@ -218,6 +227,7 @@ export default function Home() {
                         size="lg"
                         onClick={() => setIsScanning(true)}
                         disabled={isLoading}
+                         className="w-full border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground sm:w-auto"
                       >
                         <Camera className="mr-2 h-5 w-5" />
                         Scan with Camera
@@ -229,46 +239,48 @@ export default function Home() {
             </Card>
           </div>
 
-          <aside className="lg:col-span-1">
-            <Card className="h-full shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <History className="h-6 w-6" />
-                  <span className="text-xl font-semibold">Scan History</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading && scanHistory.length === 0 ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-16 w-full rounded-lg" />
-                    <Skeleton className="h-16 w-full rounded-lg" />
-                    <Skeleton className="h-16 w-full rounded-lg" />
-                  </div>
-                ) : scanHistory.length > 0 ? (
-                  <ScrollArea className="h-[calc(100vh-200px)] pr-3">
-                    <div className="space-y-3">
-                      {scanHistory.map((item, index) => (
-                        <HistoryItem
-                          key={`${item.qrContent}-${index}`}
-                          item={item}
-                          onClick={() => handleHistoryItemClick(item)}
-                        />
-                      ))}
+          <aside className="lg:col-span-2">
+            <div className="sticky top-24">
+              <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <History className="h-6 w-6" />
+                    <span className="text-xl font-semibold">Scan History</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading && scanHistory.length === 0 ? (
+                    <div className="space-y-4">
+                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                      <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
                     </div>
-                  </ScrollArea>
-                ) : (
-                  <div className="flex h-[calc(100vh-200px)] flex-col items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 p-8 text-center">
-                    <History className="h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">
-                      No Scans Yet
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Your recent scans will appear here.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  ) : scanHistory.length > 0 ? (
+                    <ScrollArea className="h-[calc(100vh-280px)] pr-4">
+                      <div className="space-y-3">
+                        {scanHistory.map((item, index) => (
+                          <HistoryItem
+                            key={`${item.qrContent}-${index}`}
+                            item={item}
+                            onClick={() => handleHistoryItemClick(item)}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <div className="flex h-[calc(100vh-280px)] flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/10 bg-white/5 p-8 text-center">
+                      <History className="h-12 w-12 text-muted-foreground" />
+                      <h3 className="mt-4 text-lg font-semibold">
+                        No Scans Yet
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Your recent scans will appear here.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </aside>
         </main>
       </div>
@@ -280,18 +292,15 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-xl">
+          <AlertDialogContent className="max-w-xl border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
             <AlertDialogHeader>
-              <AlertDialogTitle>Analysis Result</AlertDialogTitle>
-              <AlertDialogDescription>
-                Here is the analysis of the QR code content.
-              </AlertDialogDescription>
+              <AlertDialogTitle className="text-2xl">Analysis Result</AlertDialogTitle>
             </AlertDialogHeader>
             <div className="my-4">
               <AnalysisResultDisplay result={activeAnalysis} isLoading={false} />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Close</AlertDialogCancel>
+              <AlertDialogCancel className="border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground">Close</AlertDialogCancel>
               {activeAnalysis.type === 'Website' &&
                 activeAnalysis.qrContent.startsWith('http') && (
                   <AlertDialogAction asChild>
@@ -299,7 +308,10 @@ export default function Home() {
                       href={activeAnalysis.qrContent}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center"
+                      className={cn(
+                        'inline-flex items-center',
+                        buttonVariants({variant: 'default'})
+                      )}
                     >
                       <Globe className="mr-2 h-4 w-4" />
                       Visit Website
@@ -321,18 +333,21 @@ const HistoryItem = ({ item, onClick }: { item: AnalysisResult; onClick: () => v
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-lg border bg-card p-3 text-left transition-all hover:bg-accent hover:shadow-md"
+      className={cn(
+        "w-full rounded-xl border-l-4 bg-white/5 p-4 text-left transition-all hover:bg-white/10 hover:ring-2 hover:ring-primary/50",
+        colorClasses.border
+      )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${colorClasses.bg} ${colorClasses.text}`}>
-            <Icon className="h-5 w-5" />
+        <div className="flex min-w-0 items-center gap-4">
+          <div className={cn('flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg', colorClasses.iconBg, colorClasses.iconText)}>
+            <Icon className="h-6 w-6" />
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-card-foreground">
+            <p className="truncate text-base font-semibold text-foreground">
               {item.rootDomain || item.type}
             </p>
-            <p className="text-sm text-muted-foreground">{item.type}</p>
+            <p className="truncate text-sm text-muted-foreground">{item.description}</p>
           </div>
         </div>
         <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
@@ -359,11 +374,11 @@ const getTypeIcon = (type: QrType) => {
 
 const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
   switch (signal) {
-    case 'EMERALD': return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' };
-    case 'INDIGO': return { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400' };
-    case 'AMBER': return { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400' };
-    case 'AMETHYST': return { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400' };
-    case 'CRIMSON': return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' };
-    default: return { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-600 dark:text-gray-400' };
+    case 'EMERALD': return { border: 'border-l-[hsl(var(--chart-1))]', iconBg: 'bg-[hsl(var(--chart-1)/0.1)]', iconText: 'text-[hsl(var(--chart-1))]' };
+    case 'INDIGO': return { border: 'border-l-[hsl(var(--chart-2))]', iconBg: 'bg-[hsl(var(--chart-2)/0.1)]', iconText: 'text-[hsl(var(--chart-2))]' };
+    case 'AMBER': return { border: 'border-l-[hsl(var(--chart-3))]', iconBg: 'bg-[hsl(var(--chart-3)/0.1)]', iconText: 'text-[hsl(var(--chart-3))]' };
+    case 'AMETHYST': return { border: 'border-l-[hsl(var(--chart-4))]', iconBg: 'bg-[hsl(var(--chart-4)/0.1)]', iconText: 'text-[hsl(var(--chart-4))]' };
+    case 'CRIMSON': return { border: 'border-l-[hsl(var(--chart-5))]', iconBg: 'bg-[hsl(var(--chart-5)/0.1)]', iconText: 'text-[hsl(var(--chart-5))]' };
+    default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };

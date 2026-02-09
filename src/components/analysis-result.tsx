@@ -19,13 +19,16 @@ import {
   Mail,
   Phone,
   Download,
-  File,
-  HelpCircle,
+  FileText,
+  AlertCircle,
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
   Fingerprint,
   AlertTriangle,
+  Info,
+  ScanEye,
+  CheckCircle,
 } from 'lucide-react';
 
 interface AnalysisResultDisplayProps {
@@ -43,34 +46,34 @@ const signalInfoMap: Record<
   }
 > = {
   EMERALD: {
-    className: 'bg-emerald-500 hover:bg-emerald-500 text-white',
+    className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-800',
     Icon: ShieldCheck,
-    label: 'Emerald',
-    description: 'Transparent: Standard, direct action.',
+    label: 'Transparent',
+    description: 'Standard, direct action.',
   },
   INDIGO: {
-    className: 'bg-indigo-500 hover:bg-indigo-500 text-white',
+    className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
     Icon: Fingerprint,
-    label: 'Indigo',
-    description: 'Functional: Offline or device-specific action.',
+    label: 'Functional',
+    description: 'Offline or device-specific action.',
   },
   AMBER: {
-    className: 'bg-amber-500 hover:bg-amber-500 text-white',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border-amber-200 dark:border-amber-800',
     Icon: AlertTriangle,
-    label: 'Amber',
-    description: 'Obscured: Contains redirects or tracking.',
+    label: 'Obscured',
+    description: 'Contains redirects or tracking.',
   },
   AMETHYST: {
-    className: 'bg-violet-500 hover:bg-violet-500 text-white',
+    className: 'bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300 border-violet-200 dark:border-violet-800',
     Icon: ShieldQuestion,
-    label: 'Amethyst',
-    description: 'Transactional: Involves a login or payment.',
+    label: 'Transactional',
+    description: 'Involves a login or payment.',
   },
   CRIMSON: {
-    className: 'bg-red-500 hover:bg-red-500 text-white',
+    className: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-800',
     Icon: ShieldAlert,
-    label: 'Crimson',
-    description: 'Critical Obscurity: High potential for obfuscation.',
+    label: 'Critical Obscurity',
+    description: 'High potential for obfuscation.',
   },
 };
 
@@ -82,17 +85,23 @@ const typeIconMap: Record<QrType, React.ElementType> = {
   Email: Mail,
   Phone: Phone,
   'App Download': Download,
-  File: File,
-  Unknown: HelpCircle,
+  File: FileText,
+  Unknown: AlertCircle,
 };
 
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
+const Section: React.FC<{ title: string; icon: React.ElementType; children: React.ReactNode }> = ({
   title,
+  icon: Icon,
   children,
 }) => (
-  <div className="space-y-1">
-    <h3 className="font-semibold text-muted-foreground">{title}</h3>
-    <div className="text-foreground text-base">{children}</div>
+  <div className="flex items-start gap-4">
+    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+        <Icon className="h-5 w-5 text-muted-foreground" />
+    </div>
+    <div>
+      <h3 className="font-semibold text-foreground">{title}</h3>
+      <div className="mt-1 text-sm text-muted-foreground">{children}</div>
+    </div>
   </div>
 );
 
@@ -108,47 +117,49 @@ export function AnalysisResultDisplay({
     return null;
   }
 
-  const TypeIcon = typeIconMap[result.type] || HelpCircle;
+  const TypeIcon = typeIconMap[result.type] || AlertCircle;
   const signalInfo = signalInfoMap[result.signal];
 
   return (
-    <Card className="w-full shadow-lg animate-in fade-in-50">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <TypeIcon className="w-6 h-6" />
-              <span>Type: {result.type}</span>
-            </CardTitle>
-            {result.rootDomain && (
-              <CardDescription className="text-base mt-1">
-                Root Domain: {result.rootDomain}
-              </CardDescription>
-            )}
+    <Card className="w-full border-none bg-transparent shadow-none">
+      <CardHeader className="p-0">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${signalInfo.className.replace(/bg-(.*?-100)/,'bg-$1/50').replace('dark:bg-','dark:bg-opacity-30 dark:bg-')}`}>
+                <TypeIcon className="h-6 w-6" />
+            </div>
+            <div>
+                <CardTitle className="text-xl">{result.type}</CardTitle>
+                {result.rootDomain && (
+                    <CardDescription className="text-base">
+                        {result.rootDomain}
+                    </CardDescription>
+                )}
+            </div>
           </div>
           <Badge
-            className={`flex items-center gap-2 text-sm ${signalInfo.className}`}
-            aria-label={`Signal: ${signalInfo.label}. ${signalInfo.description}`}
+            variant="outline"
+            className={`flex items-center gap-2 py-1 px-3 text-sm ${signalInfo.className}`}
           >
-            <signalInfo.Icon className="w-4 h-4" />
-            <span>{signalInfo.label}</span>
+            <signalInfo.Icon className="h-4 w-4" />
+            <span>{signalInfo.label} Signal</span>
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Section title="What this QR code does:">
+      <CardContent className="mt-6 space-y-5 p-0">
+        <Section title="Description" icon={Info}>
           <p>{result.description}</p>
         </Section>
-        <Section title="What will happen if you open it:">
+        <Section title="Expected Action" icon={CheckCircle}>
           <p>{result.action}</p>
         </Section>
-        <Section title="What to be aware of:">
+        <Section title="Awareness" icon={ScanEye}>
           <p>{result.awareness}</p>
           {result.hiddenVariables && result.hiddenVariables.length > 0 && (
-            <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
+            <ul className="mt-2 list-inside list-disc space-y-1 text-xs">
               {result.hiddenVariables.map((variable, index) => (
                 <li key={index}>
-                  Found parameter: <code>{variable}</code>
+                  Found tracking parameter: <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{variable}</code>
                 </li>
               ))}
             </ul>
@@ -161,28 +172,42 @@ export function AnalysisResultDisplay({
 
 function ResultSkeleton() {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-6 w-64 mt-2" />
-          </div>
-          <Skeleton className="h-7 w-24" />
+    <Card className="w-full border-none bg-transparent shadow-none">
+      <CardHeader className="p-0">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-lg" />
+                <div className="space-y-1">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-5 w-48" />
+                </div>
+            </div>
+          <Skeleton className="h-8 w-32 rounded-full" />
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-5 w-full" />
+      <CardContent className="mt-6 space-y-5 p-0">
+        <div className="flex items-start gap-4">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <div className="w-full space-y-2">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+            </div>
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-5 w-full" />
+        <div className="flex items-start gap-4">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <div className="w-full space-y-2">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-full" />
+            </div>
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-5 w-4/5" />
+         <div className="flex items-start gap-4">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <div className="w-full space-y-2">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/5" />
+            </div>
         </div>
       </CardContent>
     </Card>

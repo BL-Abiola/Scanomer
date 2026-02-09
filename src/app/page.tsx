@@ -10,18 +10,9 @@ import {
   QrCode,
   Camera,
   History,
-  ChevronRight,
-  Globe,
-  CreditCard,
-  Wifi,
-  Contact,
-  Mail,
-  Phone,
-  Download,
-  FileText,
-  AlertCircle,
   Sparkles,
   FileUp,
+  Globe,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -36,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import type { AnalysisResult, QrType } from '@/lib/types';
+import type { AnalysisResult } from '@/lib/types';
 import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { HistoryItem } from '@/components/history-item';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -201,7 +193,7 @@ export default function Home() {
     <>
       <div className="min-h-screen w-full">
         <header className="fixed top-0 left-0 right-0 z-20 border-b border-white/10 bg-background/80 backdrop-blur-lg">
-          <div className="container mx-auto flex h-16 max-w-8xl items-center justify-between px-4">
+          <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
               <h1 className="text-xl font-bold tracking-tight">
@@ -214,8 +206,8 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 pt-24 pb-8 lg:grid-cols-2">
-          <div className="w-full lg:sticky lg:top-24">
+        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
+          <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
@@ -297,7 +289,7 @@ export default function Home() {
             </Card>
           </div>
 
-          <aside className="w-full">
+          <aside className="w-full lg:col-span-2">
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
@@ -402,60 +394,3 @@ export default function Home() {
     </>
   );
 }
-
-const HistoryItem = ({ item, onClick }: { item: AnalysisResult; onClick: () => void }) => {
-  const Icon = getTypeIcon(item.type);
-  const colorClasses = getSignalColorClasses(item.signal);
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "w-full rounded-xl border-l-4 bg-white/5 p-4 text-left transition-all hover:bg-white/10 hover:ring-2 hover:ring-primary/50",
-        colorClasses.border
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className={cn('flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg', colorClasses.iconBg, colorClasses.iconText)}>
-            <Icon className="h-6 w-6" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-foreground">
-              {item.rootDomain || item.type}
-            </p>
-            <p className="truncate text-sm text-muted-foreground">{item.description}</p>
-          </div>
-        </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-      </div>
-    </button>
-  );
-};
-
-
-const getTypeIcon = (type: QrType) => {
-  const iconMap: Record<QrType, React.ElementType> = {
-    Website: Globe,
-    Payment: CreditCard,
-    'Wi-Fi': Wifi,
-    Contact: Contact,
-    Email: Mail,
-    Phone: Phone,
-    'App Download': Download,
-    File: FileText,
-    Unknown: AlertCircle,
-  };
-  return iconMap[type] || AlertCircle;
-};
-
-const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
-  switch (signal) {
-    case 'EMERALD': return { border: 'border-l-[hsl(var(--chart-1))]', iconBg: 'bg-[hsl(var(--chart-1)/0.1)]', iconText: 'text-[hsl(var(--chart-1))]' };
-    case 'INDIGO': return { border: 'border-l-[hsl(var(--chart-2))]', iconBg: 'bg-[hsl(var(--chart-2)/0.1)]', iconText: 'text-[hsl(var(--chart-2))]' };
-    case 'AMBER': return { border: 'border-l-[hsl(var(--chart-3))]', iconBg: 'bg-[hsl(var(--chart-3)/0.1)]', iconText: 'text-[hsl(var(--chart-3))]' };
-    case 'AMETHYST': return { border: 'border-l-[hsl(var(--chart-4))]', iconBg: 'bg-[hsl(var(--chart-4)/0.1)]', iconText: 'text-[hsl(var(--chart-4))]' };
-    case 'CRIMSON': return { border: 'border-l-[hsl(var(--chart-5))]', iconBg: 'bg-[hsl(var(--chart-5)/0.1)]', iconText: 'text-[hsl(var(--chart-5))]' };
-    default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
-  }
-};

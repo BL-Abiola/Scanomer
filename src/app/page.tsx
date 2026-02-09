@@ -174,31 +174,22 @@ export default function Home() {
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
-                <CardDescription>Scan a QR code from your camera, an image, or paste the content below.</CardDescription>
+                <CardDescription>Scan a QR code from your camera or paste the content below.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-4">
                         <Button
                             type="button"
                             variant="outline"
                             size="lg"
                             onClick={() => setIsScanning(true)}
                             disabled={isLoading}
-                            className="flex h-40 flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                            className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
                         >
                             <Camera className="h-10 w-10" />
                             <span>Scan with Camera</span>
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="lg"
-                            disabled={true}
-                            className="flex h-40 cursor-not-allowed flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
-                        >
-                            <FileUp className="h-10 w-10" />
-                            <span>Upload Image</span>
+                            <span className="text-xs text-muted-foreground">(Upload from image coming soon)</span>
                         </Button>
                     </div>
 
@@ -400,5 +391,3 @@ const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
     default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };
-
-    

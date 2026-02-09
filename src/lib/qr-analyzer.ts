@@ -54,17 +54,20 @@ function analyzeWebsite(content: string, type: QrType): Omit<AnalysisResult, 'qr
     const hiddenVariables: string[] = [];
     let signal: Signal = 'EMERALD';
 
+    // Base awareness
+    awarenessPoints.push('Always be sure you trust the destination domain.');
+
     // Crimson Signals
     if (IP_LOGGERS.some(logger => hostname.includes(logger))) {
         signal = 'CRIMSON';
-        awarenessPoints.push('This link is associated with a service known for IP address logging.');
+        awarenessPoints.push('This link is from a service known for IP logging. We recommend not to open it.');
     }
 
     // Amethyst Signals
     if (signal === 'EMERALD') {
         if (PAYMENT_PROVIDERS.some(p => hostname.includes(p)) || TRANSACTIONAL_KEYWORDS.some(k => url.pathname.includes(`/${k}`))) {
             signal = 'AMETHYST';
-            awarenessPoints.push('This link may lead to a payment or login page.');
+            awarenessPoints.push('This appears to be a payment or login page. Ensure the site is secure (HTTPS) before entering info.');
             type = 'Payment';
         }
     }
@@ -73,25 +76,27 @@ function analyzeWebsite(content: string, type: QrType): Omit<AnalysisResult, 'qr
     if (signal === 'EMERALD') {
         if (SHORTENERS.some(shortener => hostname.includes(shortener))) {
             signal = 'AMBER';
-            awarenessPoints.push(`This link uses a URL shortener (${hostname}). The final destination is obscured.`);
+            awarenessPoints.push(`It uses a URL shortener (${hostname}), which hides the final destination. Proceed with caution.`);
         }
         const foundTrackingParams = [...url.searchParams.keys()].filter(key => TRACKING_PARAMS.includes(key.toLowerCase()));
         if (foundTrackingParams.length > 0) {
             if (signal === 'EMERALD') signal = 'AMBER';
-            awarenessPoints.push('This link contains tracking parameters.');
+            awarenessPoints.push('This link includes tracking parameters to monitor your activity.');
             hiddenVariables.push(...foundTrackingParams);
         }
     }
 
-    const description = type === 'Payment' 
-      ? 'This QR code contains a link for a transaction or login.'
-      : type === 'App Download' 
-      ? 'This QR code contains a link to download an application.'
-      : 'This QR code contains a link to a website.';
+    let description = 'This is a link to a website.';
+    if (type === 'Payment') {
+        description = 'This is a link for a payment or account login.';
+    } else if (type === 'App Download') {
+        description = 'This is a link to download an app.';
+        awarenessPoints.push('Only install apps from trusted developers and official app stores.');
+    }
       
-    const action = `Opens your web browser to navigate to ${hostname}.`;
+    const action = `It will open your browser and go to ${hostname}.`;
     
-    const awareness = awarenessPoints.length > 0 ? awarenessPoints.join(' ') : 'Nothing unusual can be determined from the QR content alone.';
+    const awareness = awarenessPoints.join(' ');
 
     return { type, signal, description, action, awareness, rootDomain: hostname, hiddenVariables };
 }
@@ -100,32 +105,32 @@ function analyzeSimpleProtocol(content: string, type: QrType): Omit<AnalysisResu
     const signal: Signal = 'INDIGO';
     let description = 'This QR code contains data for a device action.';
     let action = 'Your device will perform a native action.';
-    let awareness = 'Nothing unusual can be determined from the QR content alone.';
+    let awareness = 'This is a standard action for your device.';
 
     switch (type) {
         case 'Wi-Fi':
             const ssidMatch = content.match(/S:([^;]+);/);
             const ssid = ssidMatch ? ssidMatch[1] : 'an unknown network';
-            description = 'This QR code contains Wi-Fi network credentials.';
-            action = `Prompts your device to connect to the Wi-Fi network "${ssid}".`;
-            awareness = `Your device will attempt to join the network with the provided credentials. Verify the network name is correct.`;
+            description = 'Contains credentials to join a Wi-Fi network.';
+            action = `Your device will ask to connect to the network named "${ssid}".`;
+            awareness = 'This will automatically connect you to the Wi-Fi network. Only join networks you trust.';
             break;
         case 'Contact':
-            description = 'This QR code contains contact information.';
-            action = 'Offers to add a new contact to your address book.';
-            awareness = 'Review the contact information before saving.';
+            description = 'This is a vCard with contact information.';
+            action = 'Your device will offer to save a new contact.';
+            awareness = 'Review the details (name, number, email) before adding it to your address book.';
             break;
         case 'Email':
             const emailTo = content.split('?')[0].replace('mailto:', '');
-            description = 'This QR code creates a new email draft.';
-            action = `Opens your default email client to compose a message to ${emailTo}.`;
-            awareness = 'The QR code may pre-fill the subject and body of the email.';
+            description = 'This QR code will start a new email.';
+            action = `It will open your email app with a new draft addressed to ${emailTo}.`;
+            awareness = 'The body and subject may be pre-filled. Check the content before sending.';
             break;
         case 'Phone':
             const phoneNum = content.replace('tel:', '');
-            description = 'This QR code contains a phone number.';
-            action = `Prompts your device to place a call to ${phoneNum}.`;
-            awareness = 'Verify the phone number before confirming the call.';
+            description = 'This contains a phone number to call.';
+            action = `Your device will prompt you to call the number ${phoneNum}.`;
+            awareness = 'Check that you recognize the number before placing the call.';
             break;
     }
     return { type, signal, description, action, awareness };
@@ -158,9 +163,9 @@ export function analyzeQrContent(content: string): AnalysisResult {
             result = {
                 type: 'File',
                 signal: 'CRIMSON',
-                description: 'This QR code contains an embedded file.',
-                action: 'Prompts to download or open a file directly on your device.',
-                awareness: 'Opening files from unknown sources can be a security risk. This method can hide the true file type and origin.',
+                description: 'Contains an embedded file for download.',
+                action: 'Your device will prompt you to download a file.',
+                awareness: 'This is a high-risk action. The file could be malicious. Do not open files from sources you do not trust completely.',
             };
             break;
             
@@ -169,9 +174,9 @@ export function analyzeQrContent(content: string): AnalysisResult {
             result = {
                 type: 'Unknown',
                 signal: 'AMBER',
-                description: 'This QR code contains plain text or an unrecognized data format.',
-                action: 'Your device will likely show the text content or offer to search for it.',
-                awareness: 'The content is not a standard scannable action. It may be a simple message or a private key.',
+                description: 'Contains plain text or an unrecognized data format.',
+                action: 'Your device will show the raw text or offer a web search.',
+                awareness: 'This is not a standard scannable action. It could be a simple message, a unique code, or a private key. Be cautious if you don\'t recognize it.',
             };
             break;
     }

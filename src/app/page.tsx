@@ -19,8 +19,14 @@ import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
 import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
-import { Camera, Scan } from 'lucide-react';
+import { Camera, History, Scan } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -43,6 +49,7 @@ export default function Home() {
   const { toast } = useToast();
   const [analysisResult, setAnalysisResult] =
     React.useState<AnalysisResult | null>(null);
+  const [scanHistory, setScanHistory] = React.useState<AnalysisResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(false);
 
@@ -53,39 +60,46 @@ export default function Home() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    setAnalysisResult(null);
-    try {
-      const result = await analyzeAction(values.qrContent);
-      if (result) {
-        setAnalysisResult(result);
-      } else {
-        throw new Error('Analysis failed to return a result.');
+  const onSubmit = React.useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      setIsLoading(true);
+      setAnalysisResult(null);
+      try {
+        const result = await analyzeAction(values.qrContent);
+        if (result) {
+          setAnalysisResult(result);
+          setScanHistory((prevHistory) =>
+            [result, ...prevHistory].slice(0, 10)
+          );
+        } else {
+          throw new Error('Analysis failed to return a result.');
+        }
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: 'destructive',
+          title: 'Analysis Error',
+          description:
+            'An unexpected error occurred during analysis. Please check the content and try again.',
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Analysis Error',
-        description:
-          'An unexpected error occurred during analysis. Please check the content and try again.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    },
+    [toast]
+  );
 
   const handleScanSuccess = React.useCallback(
-    (decodedText: string) => {
-      form.setValue('qrContent', decodedText);
+    async (decodedText: string) => {
       setIsScanning(false);
+      form.setValue('qrContent', decodedText);
+      await onSubmit({ qrContent: decodedText });
       toast({
-        title: 'QR Code Scanned',
-        description: 'Content has been pasted into the text area.',
+        title: 'QR Code Scanned & Analyzed',
+        description: 'The analysis result is now displayed.',
       });
     },
-    [form, toast]
+    [form, toast, onSubmit]
   );
 
   const handleScanCancel = React.useCallback(() => {
@@ -176,6 +190,32 @@ export default function Home() {
             />
           )}
         </div>
+
+        {scanHistory.length > 0 && (
+          <div className="mt-8 w-full">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4 flex items-center gap-2">
+              <History className="w-6 h-6" />
+              Scan History
+            </h2>
+            <Accordion type="single" collapsible className="w-full">
+              {scanHistory.map((item, index) => (
+                <AccordionItem
+                  value={`item-${index}`}
+                  key={`${item.qrContent}-${index}`}
+                >
+                  <AccordionTrigger>
+                    <span className="truncate">
+                      {item.type}: {item.rootDomain || item.qrContent}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <AnalysisResultDisplay result={item} isLoading={false} />
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        )}
       </div>
     </main>
   );

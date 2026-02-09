@@ -63,7 +63,7 @@ export function QrScanner({ onScanSuccess, onCancel }: QrScannerProps) {
 
   return (
     <div className="space-y-4">
-      <div id={qrcodeRegionId} className="w-full overflow-hidden rounded-lg border aspect-video" />
+      <div id={qrcodeRegionId} className="w-full overflow-hidden rounded-lg border aspect-square" />
       <Button
         type="button"
         variant="outline"
@@ -77,3 +77,5 @@ export function QrScanner({ onScanSuccess, onCancel }: QrScannerProps) {
     </div>
   );
 }
+
+    

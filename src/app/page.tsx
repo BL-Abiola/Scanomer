@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Html5Qrcode } from 'html5-qrcode';
 import {
   QrCode,
   Camera,
@@ -61,7 +62,7 @@ const QrScanner = dynamic(
     ssr: false,
     loading: () => (
       <div className="space-y-4">
-        <Skeleton className="aspect-video w-full rounded-lg" />
+        <Skeleton className="aspect-square w-full rounded-lg" />
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
     ),
@@ -75,6 +76,7 @@ export default function Home() {
   const [isScanning, setIsScanning] = React.useState(false);
   const [activeAnalysis, setActiveAnalysis] =
     React.useState<AnalysisResult | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -121,6 +123,40 @@ export default function Home() {
     },
     [form, onSubmit]
   );
+  
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files.length) return;
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const html5QrCode = new Html5Qrcode("file-scanner", false);
+    
+    setIsLoading(true);
+    setActiveAnalysis(null);
+
+    try {
+        const decodedText = await html5QrCode.scanFile(file, false);
+        form.setValue('qrContent', decodedText);
+        await onSubmit({ qrContent: decodedText });
+    } catch (err) {
+        console.error("Error scanning file:", err);
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: "No QR code found in the image.",
+        });
+        setIsLoading(false);
+    } finally {
+        if (event.target) {
+            event.target.value = '';
+        }
+    }
+  };
+
 
   const handleScanCancel = React.useCallback(() => {
     setIsScanning(false);
@@ -174,11 +210,11 @@ export default function Home() {
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
-                <CardDescription>Scan a QR code from your camera or paste the content below.</CardDescription>
+                <CardDescription>Scan a QR code from your camera, upload an image, or paste the content below.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Button
                             type="button"
                             variant="outline"
@@ -189,8 +225,25 @@ export default function Home() {
                         >
                             <Camera className="h-10 w-10" />
                             <span>Scan with Camera</span>
-                            <span className="text-xs text-muted-foreground">(Upload from image coming soon)</span>
                         </Button>
+                         <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={handleUploadClick}
+                            disabled={isLoading}
+                            className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                        >
+                            <FileUp className="h-10 w-10" />
+                            <span>Upload from Image</span>
+                        </Button>
+                         <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                         />
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -391,3 +444,5 @@ const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
     default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };
+
+    

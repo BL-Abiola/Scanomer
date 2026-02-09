@@ -178,7 +178,7 @@ export default function Home() {
   if (isScanning) {
     return (
       <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-2xl">
           <header className="mb-8 flex flex-col items-center text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Camera className="h-8 w-8" />
@@ -214,7 +214,7 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 px-4 pt-24 pb-8 lg:grid-cols-2">
+        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 pt-24 pb-8 lg:grid-cols-2">
           <div className="w-full lg:sticky lg:top-24">
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>

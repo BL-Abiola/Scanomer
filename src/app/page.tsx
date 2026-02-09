@@ -214,8 +214,8 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="container mx-auto grid max-w-3xl grid-cols-1 gap-y-10 px-4 pt-24 pb-8">
-          <div className="w-full">
+        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 px-4 pt-24 pb-8 lg:grid-cols-2">
+          <div className="w-full lg:sticky lg:top-24">
             <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
@@ -459,3 +459,5 @@ const getSignalColorClasses = (signal: AnalysisResult['signal']) => {
     default: return { border: 'border-l-gray-500', iconBg: 'bg-gray-500/10', iconText: 'text-gray-400' };
   }
 };
+
+    

@@ -171,12 +171,6 @@ export default function Home() {
     return (
       <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-2xl">
-          <header className="mb-8 flex flex-col items-center text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Camera className="h-8 w-8" />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight">Scan QR Code</h1>
-          </header>
           <QrScanner
             onScanSuccess={handleScanSuccess}
             onCancel={handleScanCancel}
@@ -391,3 +385,5 @@ export default function Home() {
     </>
   );
 }
+
+    

@@ -88,7 +88,7 @@ export default function Home() {
     React.useState<AnalysisResult | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
-  const [theme, setTheme] = React.useState('dark');
+  const [theme, setTheme] = React.useState('light');
 
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -209,7 +209,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen w-full">
-        <header className="fixed top-0 left-0 right-0 z-20 border-b border-white/10 bg-background/80 backdrop-blur-lg">
+        <header className="fixed top-0 left-0 right-0 z-20 border-b bg-background/80 backdrop-blur-lg">
           <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
@@ -228,7 +228,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+                <DialogContent className="sm:max-w-md shadow-2xl shadow-black/20 backdrop-blur-xl">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -236,13 +236,13 @@ export default function Home() {
                     </DialogDescription>
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/5">
+                    <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="appearance">Appearance</TabsTrigger>
                       <TabsTrigger value="about">About</TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
                       <div className="grid gap-4">
-                        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3">
+                        <div className="flex items-center justify-between rounded-lg border p-3">
                           <Label htmlFor="dark-mode" className="text-foreground">Dark Mode</Label>
                           <Switch
                             id="dark-mode"
@@ -271,7 +271,7 @@ export default function Home() {
 
         <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
-            <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-2xl">Analyze QR Content</CardTitle>
                 <CardDescription>Scan a QR code from your camera, upload an image, or paste the content below.</CardDescription>
@@ -284,7 +284,7 @@ export default function Home() {
                         size="lg"
                         onClick={() => setIsSelectionDialogOpen(true)}
                         disabled={isLoading}
-                        className="flex h-40 w-full flex-col items-center justify-center gap-2 border-white/10 bg-white/5 text-base hover:bg-white/10 hover:text-foreground"
+                        className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
                     >
                         <Camera className="h-10 w-10" />
                         <span>Scan or Upload</span>
@@ -298,9 +298,9 @@ export default function Home() {
                     />
 
                     <div className="flex items-center gap-4">
-                        <div className="flex-grow border-t border-white/10"></div>
+                        <div className="flex-grow border-t"></div>
                         <span className="text-sm text-muted-foreground">OR</span>
-                        <div className="flex-grow border-t border-white/10"></div>
+                        <div className="flex-grow border-t"></div>
                     </div>
 
                     <Form {...form}>
@@ -319,7 +319,7 @@ export default function Home() {
                                         <FormControl>
                                             <Textarea
                                                 placeholder="Paste raw QR code content..."
-                                                className="min-h-[60px] resize-none rounded-lg border-white/10 bg-white/5 text-base ring-offset-background focus-visible:ring-primary"
+                                                className="min-h-[60px] resize-none text-base"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -353,7 +353,7 @@ export default function Home() {
           </div>
 
           <aside className="w-full lg:col-span-2">
-            <Card className="border-white/10 bg-card/60 shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <History className="h-6 w-6" />
@@ -363,9 +363,9 @@ export default function Home() {
               <CardContent>
                 {isLoading && scanHistory.length === 0 ? (
                   <div className="space-y-4">
-                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
-                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
-                    <Skeleton className="h-20 w-full rounded-lg bg-white/5" />
+                    <Skeleton className="h-20 w-full rounded-lg" />
+                    <Skeleton className="h-20 w-full rounded-lg" />
+                    <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
                   <ScrollArea className="h-[400px] pr-4">
@@ -380,7 +380,7 @@ export default function Home() {
                     </div>
                   </ScrollArea>
                 ) : (
-                  <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/10 bg-white/5 p-8 text-center">
+                  <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
                     <History className="h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">
                       No Scans Yet
@@ -397,7 +397,7 @@ export default function Home() {
       </div>
 
       <AlertDialog open={isSelectionDialogOpen} onOpenChange={setIsSelectionDialogOpen}>
-        <AlertDialogContent className="border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <AlertDialogContent className="shadow-2xl shadow-black/20 backdrop-blur-xl">
             <AlertDialogHeader>
                 <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -424,7 +424,7 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-xl border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+          <AlertDialogContent className="max-w-xl shadow-2xl shadow-black/20 backdrop-blur-xl">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-2xl">Analysis Result</AlertDialogTitle>
             </AlertDialogHeader>
@@ -432,7 +432,7 @@ export default function Home() {
               <AnalysisResultDisplay result={activeAnalysis} isLoading={false} />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel className="border-white/10 bg-white/5 hover:bg-white/10 hover:text-foreground">Go Back</AlertDialogCancel>
+              <AlertDialogCancel>Go Back</AlertDialogCancel>
               {activeAnalysis.type === 'Website' &&
                 activeAnalysis.qrContent.startsWith('http') && (
                   <AlertDialogAction asChild>

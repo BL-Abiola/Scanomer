@@ -13,6 +13,7 @@ import {
   Sparkles,
   FileUp,
   Globe,
+  Cog,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -41,6 +42,16 @@ import {
   AlertDialogTitle,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
@@ -54,7 +65,7 @@ const QrScanner = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="space-y-4">
+      <div className="w-full max-w-2xl mx-auto space-y-4">
         <Skeleton className="aspect-square w-full rounded-lg" />
         <Skeleton className="h-12 w-full rounded-lg" />
       </div>
@@ -71,6 +82,15 @@ export default function Home() {
     React.useState<AnalysisResult | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
+  const [theme, setTheme] = React.useState('dark');
+
+  React.useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -170,12 +190,10 @@ export default function Home() {
   if (isScanning) {
     return (
       <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
-          <QrScanner
-            onScanSuccess={handleScanSuccess}
-            onCancel={handleScanCancel}
-          />
-        </div>
+        <QrScanner
+          onScanSuccess={handleScanSuccess}
+          onCancel={handleScanCancel}
+        />
       </main>
     );
   }
@@ -191,9 +209,37 @@ export default function Home() {
                 ScanWise
               </h1>
             </div>
-             <p className="hidden text-sm text-muted-foreground md:block">
+            <div className="flex items-center gap-4">
+              <p className="hidden text-sm text-muted-foreground md:block">
                 A Neutral QR Code Interpretation Engine
               </p>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8 shrink-0">
+                    <Cog className="h-4 w-4" />
+                    <span className="sr-only">Settings</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+                  <SheetHeader>
+                    <SheetTitle>Appearance</SheetTitle>
+                    <SheetDescription>
+                      Customize the look and feel of the app.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="flex items-center justify-between rounded-lg border border-white/10 p-3">
+                      <Label htmlFor="dark-mode">Dark Mode</Label>
+                      <Switch
+                        id="dark-mode"
+                        checked={theme === 'dark'}
+                        onCheckedChange={toggleTheme}
+                      />
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </header>
 
@@ -385,5 +431,3 @@ export default function Home() {
     </>
   );
 }
-
-    

@@ -15,6 +15,8 @@ import {
   Globe,
   Cog,
   Wand2,
+  Key,
+  Info,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -63,6 +65,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
 import { ImageGenerator } from '@/components/image-generator';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -91,13 +94,27 @@ export default function Home() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
   const [theme, setTheme] = React.useState('light');
+  const [apiKey, setApiKey] = React.useState('');
 
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
+  React.useEffect(() => {
+    const storedApiKey = localStorage.getItem('google-ai-api-key');
+    if (storedApiKey) {
+      setApiKey(storedApiKey);
+    }
+  }, []);
+
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
+  };
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newKey = e.target.value;
+    setApiKey(newKey);
+    localStorage.setItem('google-ai-api-key', newKey);
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -238,8 +255,12 @@ export default function Home() {
                     </DialogDescription>
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                      <TabsTrigger value="api-key">
+                        <Key className="mr-2 h-4 w-4" />
+                        API Key
+                      </TabsTrigger>
                       <TabsTrigger value="about">About</TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
@@ -252,6 +273,24 @@ export default function Home() {
                             onCheckedChange={toggleTheme}
                           />
                         </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="api-key" className="pt-4">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="api-key">Google AI API Key</Label>
+                          <Input
+                            id="api-key"
+                            type="password"
+                            value={apiKey}
+                            onChange={handleApiKeyChange}
+                            placeholder="Enter your API key"
+                          />
+                        </div>
+                         <p className="text-xs text-muted-foreground flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span>Your API key is stored only in your browser. It is required for image generation. You can get a key from Google AI Studio.</span>
+                        </p>
                       </div>
                     </TabsContent>
                     <TabsContent value="about" className="pt-4">
@@ -362,7 +401,7 @@ export default function Home() {
                       </Form>
                   </TabsContent>
                   <TabsContent value="generate" className="pt-6">
-                      <ImageGenerator />
+                      <ImageGenerator apiKey={apiKey} />
                   </TabsContent>
                 </Tabs>
               </CardContent>

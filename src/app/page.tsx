@@ -43,13 +43,19 @@ import {
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -190,10 +196,12 @@ export default function Home() {
   if (isScanning) {
     return (
       <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        <QrScanner
-          onScanSuccess={handleScanSuccess}
-          onCancel={handleScanCancel}
-        />
+        <div className="w-full max-w-md space-y-4">
+          <QrScanner
+            onScanSuccess={handleScanSuccess}
+            onCancel={handleScanCancel}
+          />
+        </div>
       </main>
     );
   }
@@ -213,32 +221,50 @@ export default function Home() {
               <p className="hidden text-sm text-muted-foreground md:block">
                 A Neutral QR Code Interpretation Engine
               </p>
-              <Sheet>
-                <SheetTrigger asChild>
+              <Dialog>
+                <DialogTrigger asChild>
                   <Button variant="outline" size="icon" className="h-8 w-8 shrink-0">
                     <Cog className="h-4 w-4" />
                     <span className="sr-only">Settings</span>
                   </Button>
-                </SheetTrigger>
-                <SheetContent className="border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
-                  <SheetHeader>
-                    <SheetTitle>Appearance</SheetTitle>
-                    <SheetDescription>
-                      Customize the look and feel of the app.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="flex items-center justify-between rounded-lg border border-white/10 p-3">
-                      <Label htmlFor="dark-mode">Dark Mode</Label>
-                      <Switch
-                        id="dark-mode"
-                        checked={theme === 'dark'}
-                        onCheckedChange={toggleTheme}
-                      />
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md border-white/10 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+                  <DialogHeader>
+                    <DialogTitle>Settings</DialogTitle>
+                    <DialogDescription>
+                      Manage app settings and view information.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Tabs defaultValue="appearance" className="w-full pt-4">
+                    <TabsList className="grid w-full grid-cols-2 bg-white/5">
+                      <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                      <TabsTrigger value="about">About</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="appearance" className="pt-4">
+                      <div className="grid gap-4">
+                        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3">
+                          <Label htmlFor="dark-mode" className="text-foreground">Dark Mode</Label>
+                          <Switch
+                            id="dark-mode"
+                            checked={theme === 'dark'}
+                            onCheckedChange={toggleTheme}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="about" className="pt-4">
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                          <p className="font-semibold text-foreground">
+                              ScanWise v1.0
+                          </p>
+                          <p>
+                              A neutral QR code interpretation engine designed for transparency and security. Scan with confidence.
+                          </p>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </header>

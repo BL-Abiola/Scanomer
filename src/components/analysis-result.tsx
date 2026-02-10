@@ -95,13 +95,13 @@ const Section: React.FC<{ title: string; icon: React.ElementType; children: Reac
   icon: Icon,
   children,
 }) => (
-  <div className="flex items-start gap-3 rounded-lg bg-white/5 p-3">
-    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+  <div className="flex items-start gap-3 rounded-lg bg-white/5 p-2 md:p-3">
+    <div className="flex h-6 w-6 md:h-7 md:w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
         <Icon className="h-4 w-4" />
     </div>
     <div>
-      <h3 className="font-semibold text-foreground">{title}</h3>
-      <div className="mt-1 text-sm text-muted-foreground">{children}</div>
+      <h3 className="font-semibold text-foreground text-sm md:text-base">{title}</h3>
+      <div className="mt-1 text-xs md:text-sm text-muted-foreground">{children}</div>
     </div>
   </div>
 );
@@ -123,16 +123,16 @@ export function AnalysisResultDisplay({
 
   return (
     <div className="w-full">
-      <header className="mb-4">
+      <header className="mb-3 md:mb-4">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', signalInfo.className.replace('bg-','bg-opacity-20 bg-'))}>
-                <TypeIcon className="h-6 w-6" />
+            <div className={cn('flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg', signalInfo.className.replace('bg-','bg-opacity-20 bg-'))}>
+                <TypeIcon className="h-5 w-5 md:h-6 md:w-6" />
             </div>
             <div>
-                <h2 className="text-xl font-bold">{result.type}</h2>
+                <h2 className="text-lg md:text-xl font-bold">{result.type}</h2>
                 {result.rootDomain && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground">
                         {result.rootDomain}
                     </p>
                 )}
@@ -147,7 +147,7 @@ export function AnalysisResultDisplay({
           </Badge>
         </div>
       </header>
-      <div className="space-y-3">
+      <div className="space-y-2 md:space-y-3">
         <Section title="Description" icon={Info}>
           <p>{result.description}</p>
         </Section>

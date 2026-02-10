@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,6 +15,8 @@ import {
   FileUp,
   Globe,
   Cog,
+  KeyRound,
+  Paintbrush,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -26,10 +29,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
-import { analyzeAction } from '@/app/actions';
+import { analyzeAction, generateImageAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -66,6 +70,10 @@ const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
 });
 
+const generationFormSchema = z.object({
+  prompt: z.string().min(1, 'Prompt cannot be empty.'),
+});
+
 const QrScanner = dynamic(
   () => import('@/components/qr-scanner').then((mod) => mod.QrScanner),
   {
@@ -89,23 +97,53 @@ export default function Home() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
   const [theme, setTheme] = React.useState('light');
+  
+  const [apiKey, setApiKey] = React.useState('');
+  const [tempApiKey, setTempApiKey] = React.useState('');
+  const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+
 
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
+  
+  React.useEffect(() => {
+    const storedApiKey = localStorage.getItem('google-api-key');
+    if (storedApiKey) {
+        setApiKey(storedApiKey);
+        setTempApiKey(storedApiKey);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    setApiKey(tempApiKey);
+    localStorage.setItem('google-api-key', tempApiKey);
+    toast({
+        title: 'API Key Saved',
+        description: 'Your Google AI API key has been saved locally.',
+    });
+  };
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const analyzeForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       qrContent: '',
     },
   });
 
-  const onSubmit = React.useCallback(
+  const generationForm = useForm<z.infer<typeof generationFormSchema>>({
+    resolver: zodResolver(generationFormSchema),
+    defaultValues: {
+      prompt: '',
+    },
+  });
+
+  const onAnalyzeSubmit = React.useCallback(
     async (values: z.infer<typeof formSchema>) => {
       setIsLoading(true);
       setActiveAnalysis(null);
@@ -116,7 +154,7 @@ export default function Home() {
             [result, ...prevHistory].slice(0, 20)
           );
           setActiveAnalysis(result);
-          form.reset();
+          analyzeForm.reset();
         } else {
           throw new Error('Analysis failed to return a result.');
         }
@@ -132,16 +170,49 @@ export default function Home() {
         setIsLoading(false);
       }
     },
-    [toast, form]
+    [toast, analyzeForm]
+  );
+  
+  const onGenerateSubmit = React.useCallback(
+    async (values: z.infer<typeof generationFormSchema>) => {
+      if (!apiKey) {
+          toast({
+              variant: 'destructive',
+              title: 'API Key Required',
+              description: 'Please set your Google AI API key in the settings.',
+          });
+          return;
+      }
+      setIsGenerating(true);
+      setGeneratedImage(null);
+      try {
+          const result = await generateImageAction(values.prompt, apiKey);
+          if (result) {
+              setGeneratedImage(result);
+          } else {
+              throw new Error('Image generation failed to return a result.');
+          }
+      } catch (error: any) {
+          console.error(error);
+          toast({
+              variant: 'destructive',
+              title: 'Generation Error',
+              description: error.message || 'An unexpected error occurred.',
+          });
+      } finally {
+          setIsGenerating(false);
+      }
+    },
+    [apiKey, toast]
   );
 
   const handleScanSuccess = React.useCallback(
     async (decodedText: string) => {
       setIsScanning(false);
-      form.setValue('qrContent', decodedText);
-      await onSubmit({ qrContent: decodedText });
+      analyzeForm.setValue('qrContent', decodedText);
+      await onAnalyzeSubmit({ qrContent: decodedText });
     },
-    [form, onSubmit]
+    [analyzeForm, onAnalyzeSubmit]
   );
   
   const handleUploadClick = () => {
@@ -153,7 +224,6 @@ export default function Home() {
     const file = event.target.files[0];
     if (!file) return;
 
-    // A hidden element used by the html5-qrcode library
     const fileScannerElement = document.createElement('div');
     fileScannerElement.id = 'file-scanner';
     fileScannerElement.style.display = 'none';
@@ -166,8 +236,8 @@ export default function Home() {
 
     try {
         const decodedText = await html5QrCode.scanFile(file, false);
-        form.setValue('qrContent', decodedText);
-        await onSubmit({ qrContent: decodedText });
+        analyzeForm.setValue('qrContent', decodedText);
+        await onAnalyzeSubmit({ qrContent: decodedText });
     } catch (err) {
         console.error("Error scanning file:", err);
         toast({
@@ -228,7 +298,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md shadow-2xl shadow-black/20 backdrop-blur-xl">
+                <DialogContent className="sm:max-w-md rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -236,8 +306,9 @@ export default function Home() {
                     </DialogDescription>
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                      <TabsTrigger value="api-key">API Key</TabsTrigger>
                       <TabsTrigger value="about">About</TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
@@ -251,6 +322,21 @@ export default function Home() {
                           />
                         </div>
                       </div>
+                    </TabsContent>
+                    <TabsContent value="api-key" className="pt-4">
+                        <div className="space-y-3">
+                            <Label htmlFor="api-key-input">Google AI API Key</Label>
+                            <Input
+                                id="api-key-input"
+                                type="password"
+                                value={tempApiKey}
+                                onChange={(e) => setTempApiKey(e.target.value)}
+                                placeholder="Enter your API key"
+                            />
+                            <Button onClick={handleSaveApiKey} className="w-full">
+                                Save API Key
+                            </Button>
+                        </div>
                     </TabsContent>
                     <TabsContent value="about" className="pt-4">
                       <div className="space-y-2 text-sm text-muted-foreground">
@@ -274,83 +360,155 @@ export default function Home() {
             <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                    <QrCode className="h-6 w-6"/>
-                    Analyze a QR Code
+                    <Sparkles className="h-6 w-6"/>
+                    Toolkit
                 </CardTitle>
-                <CardDescription>Scan, upload, or paste content to analyze it.</CardDescription>
+                <CardDescription>Analyze QR codes or generate QR-themed images.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                      <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={() => setIsSelectionDialogOpen(true)}
-                          disabled={isLoading}
-                          className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
-                      >
-                          <Camera className="h-10 w-10" />
-                          <span>Scan or Upload</span>
-                      </Button>
-                      <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleImageUpload}
-                          accept="image/*"
-                          className="hidden"
-                      />
+                <Tabs defaultValue="analyze" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="analyze"><QrCode className="mr-2 h-4 w-4"/>Analyze</TabsTrigger>
+                    <TabsTrigger value="generate"><Paintbrush className="mr-2 h-4 w-4"/>Generate</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="analyze" className="pt-6">
+                    <div className="space-y-6">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsSelectionDialogOpen(true)}
+                            disabled={isLoading}
+                            className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
+                        >
+                            <Camera className="h-10 w-10" />
+                            <span>Scan or Upload</span>
+                        </Button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                        />
 
-                      <div className="flex items-center gap-4">
-                          <div className="flex-grow border-t"></div>
-                          <span className="text-sm text-muted-foreground">OR</span>
-                          <div className="flex-grow border-t"></div>
-                      </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex-grow border-t"></div>
+                            <span className="text-sm text-muted-foreground">OR</span>
+                            <div className="flex-grow border-t"></div>
+                        </div>
 
-                      <Form {...form}>
-                          <form
-                              onSubmit={form.handleSubmit(onSubmit)}
-                              className="space-y-4"
-                          >
-                              <FormField
-                                  control={form.control}
-                                  name="qrContent"
-                                  render={({ field }) => (
-                                      <FormItem>
-                                          <FormLabel className="sr-only">
-                                              QR Code Content
-                                          </FormLabel>
-                                          <FormControl>
-                                              <Textarea
-                                                  placeholder="Paste raw QR code content..."
-                                                  className="min-h-[60px] resize-none text-base"
-                                                  {...field}
-                                              />
-                                          </FormControl>
-                                          <FormMessage />
-                                      </FormItem>
-                                  )}
-                              />
-                              <Button
-                                  type="submit"
-                                  size="lg"
-                                  disabled={isLoading}
-                                  className="w-full"
-                              >
-                                  {isLoading ? (
-                                      <>
-                                          <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                                          Analyzing...
-                                      </>
-                                  ) : (
-                                      <>
-                                          <Sparkles className="mr-2 h-5 w-5" />
-                                          Analyze Content
-                                      </>
-                                  )}
-                              </Button>
-                          </form>
-                      </Form>
-                </div>
+                        <Form {...analyzeForm}>
+                            <form
+                                onSubmit={analyzeForm.handleSubmit(onAnalyzeSubmit)}
+                                className="space-y-4"
+                            >
+                                <FormField
+                                    control={analyzeForm.control}
+                                    name="qrContent"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">
+                                                QR Code Content
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Paste raw QR code content..."
+                                                    className="min-h-[60px] resize-none text-base"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    disabled={isLoading}
+                                    className="w-full"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                                            Analyzing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="mr-2 h-5 w-5" />
+                                            Analyze Content
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+                        </Form>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="generate" className="pt-6">
+                    <div className="space-y-4">
+                        <Form {...generationForm}>
+                            <form
+                                onSubmit={generationForm.handleSubmit(onGenerateSubmit)}
+                                className="space-y-4"
+                            >
+                                <FormField
+                                    control={generationForm.control}
+                                    name="prompt"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Image Prompt</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="e.g., A QR code made of futuristic neon lights..."
+                                                    className="resize-y"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    disabled={isGenerating}
+                                    className="w-full"
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Paintbrush className="mr-2 h-5 w-5" />
+                                            Generate Image
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+                        </Form>
+                        <div className="mt-4 aspect-square w-full">
+                            {isGenerating ? (
+                                <Skeleton className="h-full w-full rounded-lg" />
+                            ) : generatedImage ? (
+                                <Image
+                                    src={generatedImage}
+                                    alt="Generated QR-themed image"
+                                    width={512}
+                                    height={512}
+                                    className="h-full w-full rounded-lg object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                                    <Paintbrush className="h-12 w-12 text-muted-foreground" />
+                                    <p className="mt-2 text-sm text-muted-foreground">Your generated image will appear here.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
@@ -371,7 +529,7 @@ export default function Home() {
                     <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
-                  <ScrollArea className="h-[400px] pr-4">
+                  <ScrollArea className="h-[calc(100vh-22rem)] pr-4">
                     <div className="space-y-3">
                       {scanHistory.map((item, index) => (
                         <HistoryItem
@@ -383,7 +541,7 @@ export default function Home() {
                     </div>
                   </ScrollArea>
                 ) : (
-                  <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
+                  <div className="flex h-[calc(100vh-22rem)] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
                     <History className="h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">
                       No Scans Yet
@@ -400,7 +558,7 @@ export default function Home() {
       </div>
 
       <AlertDialog open={isSelectionDialogOpen} onOpenChange={setIsSelectionDialogOpen}>
-        <AlertDialogContent className="shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <AlertDialogContent className="rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
             <AlertDialogHeader>
                 <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -427,11 +585,11 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-xl shadow-2xl shadow-black/20 backdrop-blur-xl">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-2xl">Analysis Result</AlertDialogTitle>
+              <AlertDialogTitle className="text-xl md:text-2xl">Analysis Result</AlertDialogTitle>
             </AlertDialogHeader>
-            <div className="my-4">
+            <div className="my-2 md:my-4">
               <AnalysisResultDisplay result={activeAnalysis} isLoading={false} />
             </div>
             <AlertDialogFooter>

@@ -112,7 +112,6 @@ export default function Home() {
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] =
     React.useState(false);
   const [theme, setTheme] = React.useState('light');
-
   const [apiKey, setApiKey] = React.useState('');
   const [tempApiKey, setTempApiKey] = React.useState('');
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(
@@ -120,17 +119,25 @@ export default function Home() {
   );
   const [isGenerating, setIsGenerating] = React.useState(false);
 
+  // On mount, load settings from local storage
   React.useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+    const storedTheme = localStorage.getItem('scanwise-theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      setTheme(storedTheme);
+    }
 
-  React.useEffect(() => {
     const storedApiKey = localStorage.getItem('google-api-key');
     if (storedApiKey) {
       setApiKey(storedApiKey);
       setTempApiKey(storedApiKey);
     }
   }, []);
+
+  // Update DOM and save to local storage when theme changes
+  React.useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('scanwise-theme', theme);
+  }, [theme]);
 
   const handleSaveApiKey = () => {
     setApiKey(tempApiKey);

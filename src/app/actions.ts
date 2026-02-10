@@ -21,16 +21,10 @@ export async function analyzeAction(
 }
 
 export async function generateImageAction(
-  prompt: string
-): Promise<GenerateImageOutput | null> {
-  if (!prompt) {
-    return null;
-  }
-  try {
-    const result = await generateImage({ prompt });
-    return result;
-  } catch (error) {
-    console.error('Error in generateImageAction:', error);
-    return null;
-  }
+  prompt: string,
+  apiKey: string
+): Promise<GenerateImageOutput> {
+  // Let the flow handle validation. Errors will be propagated to the client.
+  const result = await generateImage({ prompt, apiKey });
+  return result;
 }

@@ -8,10 +8,12 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
 
 const GenerateImageInputSchema = z.object({
   prompt: z.string().describe('The text prompt to generate an image from.'),
+  apiKey: z.string().describe('A Google AI API key.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -31,8 +33,16 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
+    if (!input.apiKey) {
+      throw new Error('API Key is required for image generation.');
+    }
+
+    // Create a temporary model object configured with the user's API key.
+    const userGoogleAI = googleAI({ apiKey: input.apiKey });
+    const imagenModel = userGoogleAI.model('imagen-4.0-fast-generate-001');
+
     const { media } = await ai.generate({
-        model: 'googleai/imagen-4.0-fast-generate-001',
+        model: imagenModel, // Use the dynamically configured model
         prompt: input.prompt,
     });
     

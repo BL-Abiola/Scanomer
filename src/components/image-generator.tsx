@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ImageIcon, Sparkles, Wand2 } from 'lucide-react';
+import { ImageIcon, Sparkles, Wand2, Info, Settings2 } from 'lucide-react';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { generateImageAction } from '@/app/actions';
 import { Card, CardContent } from './ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Label } from './ui/label';
 
 const formSchema = z.object({
   prompt: z.string().min(3, 'Prompt must be at least 3 characters long.'),
@@ -23,6 +25,20 @@ export function ImageGenerator() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(null);
+  const [apiKey, setApiKey] = React.useState('');
+
+  React.useEffect(() => {
+    const storedApiKey = localStorage.getItem('google-ai-api-key');
+    if (storedApiKey) {
+      setApiKey(storedApiKey);
+    }
+  }, []);
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newKey = e.target.value;
+    setApiKey(newKey);
+    localStorage.setItem('google-ai-api-key', newKey);
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,21 +48,25 @@ export function ImageGenerator() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!apiKey) {
+      toast({
+        variant: 'destructive',
+        title: 'API Key Required',
+        description: 'Please provide your Google AI API key in the settings below.',
+      });
+      return;
+    }
     setIsLoading(true);
     setGeneratedImage(null);
     try {
-      const result = await generateImageAction(values.prompt);
-      if (result?.imageDataUri) {
-        setGeneratedImage(result.imageDataUri);
-      } else {
-        throw new Error('Image generation failed to return an image.');
-      }
-    } catch (error) {
+      const result = await generateImageAction(values.prompt, apiKey);
+      setGeneratedImage(result.imageDataUri);
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Generation Error',
-        description: 'Could not generate image. Please try again.',
+        description: error?.message || 'Could not generate image. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -85,6 +105,33 @@ export function ImageGenerator() {
           </Button>
         </form>
       </Form>
+      
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="api-key">
+          <AccordionTrigger>
+              <div className="flex items-center gap-2">
+                <Settings2 className="h-4 w-4" />
+                API Key Settings
+              </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="api-key">Google AI API Key</Label>
+              <Input
+                id="api-key"
+                type="password"
+                value={apiKey}
+                onChange={handleApiKeyChange}
+                placeholder="Enter your API key"
+              />
+            </div>
+             <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <span>Your API key is stored only in your browser and is required for image generation. You can get a key from Google AI Studio.</span>
+            </p>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <div className="mt-6">
         {isLoading && (

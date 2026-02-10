@@ -95,9 +95,9 @@ const Section: React.FC<{ title: string; icon: React.ElementType; children: Reac
   icon: Icon,
   children,
 }) => (
-  <div className="flex items-start gap-4 rounded-lg bg-white/5 p-4">
-    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-        <Icon className="h-5 w-5" />
+  <div className="flex items-start gap-3 rounded-lg bg-white/5 p-3">
+    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
     </div>
     <div>
       <h3 className="font-semibold text-foreground">{title}</h3>
@@ -123,16 +123,16 @@ export function AnalysisResultDisplay({
 
   return (
     <div className="w-full">
-      <header className="mb-6">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className={cn('flex h-14 w-14 items-center justify-center rounded-lg', signalInfo.className.replace('bg-','bg-opacity-20 bg-'))}>
-                <TypeIcon className="h-7 w-7" />
+      <header className="mb-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', signalInfo.className.replace('bg-','bg-opacity-20 bg-'))}>
+                <TypeIcon className="h-6 w-6" />
             </div>
             <div>
-                <h2 className="text-2xl font-bold">{result.type}</h2>
+                <h2 className="text-xl font-bold">{result.type}</h2>
                 {result.rootDomain && (
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         {result.rootDomain}
                     </p>
                 )}
@@ -140,14 +140,14 @@ export function AnalysisResultDisplay({
           </div>
           <Badge
             variant="outline"
-            className={cn('flex items-center gap-2 py-1.5 px-3 text-sm', signalInfo.className)}
+            className={cn('flex items-center gap-1.5 py-1 px-2.5 text-xs', signalInfo.className)}
           >
             <signalInfo.Icon className="h-4 w-4" />
             <span>{signalInfo.label} Signal</span>
           </Badge>
         </div>
       </header>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <Section title="Description" icon={Info}>
           <p>{result.description}</p>
         </Section>
@@ -174,36 +174,36 @@ export function AnalysisResultDisplay({
 function ResultSkeleton() {
   return (
     <div className="w-full">
-      <header className="mb-6">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-                <Skeleton className="h-14 w-14 rounded-lg bg-white/5" />
-                <div className="space-y-2">
-                    <Skeleton className="h-7 w-32 bg-white/5" />
-                    <Skeleton className="h-5 w-48 bg-white/5" />
+      <header className="mb-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-lg bg-white/5" />
+                <div className="space-y-1.5">
+                    <Skeleton className="h-6 w-28 bg-white/5" />
+                    <Skeleton className="h-4 w-40 bg-white/5" />
                 </div>
             </div>
-          <Skeleton className="h-8 w-32 rounded-full bg-white/5" />
+          <Skeleton className="h-7 w-28 rounded-full bg-white/5" />
         </div>
       </header>
-      <div className="space-y-4">
-        <div className="flex items-start gap-4 rounded-lg bg-white/5 p-4">
-            <Skeleton className="h-8 w-8 rounded-md bg-white/10" />
+      <div className="space-y-3">
+        <div className="flex items-start gap-3 rounded-lg bg-white/5 p-3">
+            <Skeleton className="h-7 w-7 rounded-md bg-white/10" />
             <div className="w-full space-y-2">
                 <Skeleton className="h-4 w-1/4 bg-white/10" />
                 <Skeleton className="h-4 w-full bg-white/10" />
                 <Skeleton className="h-4 w-4/5 bg-white/10" />
             </div>
         </div>
-        <div className="flex items-start gap-4 rounded-lg bg-white/5 p-4">
-            <Skeleton className="h-8 w-8 rounded-md bg-white/10" />
+        <div className="flex items-start gap-3 rounded-lg bg-white/5 p-3">
+            <Skeleton className="h-7 w-7 rounded-md bg-white/10" />
             <div className="w-full space-y-2">
                 <Skeleton className="h-4 w-1/4 bg-white/10" />
                 <Skeleton className="h-4 w-full bg-white/10" />
             </div>
         </div>
-         <div className="flex items-start gap-4 rounded-lg bg-white/5 p-4">
-            <Skeleton className="h-8 w-8 rounded-md bg-white/10" />
+         <div className="flex items-start gap-3 rounded-lg bg-white/5 p-3">
+            <Skeleton className="h-7 w-7 rounded-md bg-white/10" />
             <div className="w-full space-y-2">
                 <Skeleton className="h-4 w-1/4 bg-white/10" />
                 <Skeleton className="h-4 w-full bg-white/10" />

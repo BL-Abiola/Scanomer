@@ -2,7 +2,6 @@
 
 import { analyzeQrContent } from '@/lib/qr-analyzer';
 import type { AnalysisResult } from '@/lib/types';
-import { generateImage, type GenerateImageOutput } from '@/ai/flows/generate-image-flow';
 
 export async function analyzeAction(
   qrContent: string
@@ -18,13 +17,4 @@ export async function analyzeAction(
     // In a real app, you might want to log this error to a monitoring service
     return null;
   }
-}
-
-export async function generateImageAction(
-  prompt: string,
-  apiKey: string
-): Promise<GenerateImageOutput> {
-  // Let the flow handle validation. Errors will be propagated to the client.
-  const result = await generateImage({ prompt, apiKey });
-  return result;
 }

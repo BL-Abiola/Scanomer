@@ -7,22 +7,13 @@
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'zod';
-import { ai } from '@/ai/genkit';
-import { GenerateImageInputSchema, type GenerateImageInput } from '@/lib/types';
-
+import type { GenerateImageInput } from '@/lib/types';
 
 export async function generateImage(input: GenerateImageInput): Promise<string> {
-    return generateImageFlow(input);
-}
-
-const generateImageFlow = ai.defineFlow(
-  {
-    name: 'generateImageFlow',
-    inputSchema: GenerateImageInputSchema,
-    outputSchema: z.string(),
-  },
-  async (input) => {
+    if (!input.apiKey) {
+        throw new Error('API key is required for image generation.');
+    }
+    
     // Create a temporary, per-request Genkit instance with the user's API key.
     // This is more secure than holding a single global instance.
     const perRequestAi = genkit({
@@ -38,10 +29,9 @@ const generateImageFlow = ai.defineFlow(
       prompt: `A QR code integrated into: ${input.prompt}`,
     });
     
-    if (!media.url) {
+    if (!media?.url) {
         throw new Error('Image generation failed to return an image URL.');
     }
 
     return media.url;
-  }
-);
+}

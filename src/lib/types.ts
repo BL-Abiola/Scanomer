@@ -21,8 +21,3 @@ export type AnalysisResult = {
   hiddenVariables?: string[];
   qrContent: string;
 };
-
-export type GenerateImageInput = {
-  prompt: string;
-  apiKey: string;
-};

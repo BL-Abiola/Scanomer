@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Html5Qrcode } from 'html5-qrcode';
+import QRCode from 'qrcode';
 import {
   QrCode,
   Camera,
@@ -17,7 +18,6 @@ import {
   Cog,
   Palette,
   Info,
-  KeyRound,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -36,11 +36,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
-import { analyzeAction, generateImageAction } from '@/app/actions';
+import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -83,8 +82,8 @@ const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
 });
 
-const generationFormSchema = z.object({
-  prompt: z.string().min(1, 'Prompt cannot be empty.'),
+const qrGenerationFormSchema = z.object({
+  prompt: z.string().min(1, 'Content cannot be empty.'),
 });
 
 const QrScanner = dynamic(
@@ -111,23 +110,16 @@ export default function Home() {
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] =
     React.useState(false);
   const [theme, setTheme] = React.useState('light');
-  const [generatedImage, setGeneratedImage] = React.useState<string | null>(
+  const [generatedQrCode, setGeneratedQrCode] = React.useState<string | null>(
     null
   );
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState('');
-  const [tempApiKey, setTempApiKey] = React.useState('');
-
+  
   // On mount, load settings from local storage
   React.useEffect(() => {
     const storedTheme = localStorage.getItem('scanwise-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
-    }
-    const storedApiKey = localStorage.getItem('scanwise-apiKey');
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      setTempApiKey(storedApiKey);
     }
   }, []);
 
@@ -141,15 +133,6 @@ export default function Home() {
     setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
-  const handleSaveApiKey = () => {
-    setApiKey(tempApiKey);
-    localStorage.setItem('scanwise-apiKey', tempApiKey);
-    toast({
-      title: 'API Key Saved',
-      description: 'Your Google AI API key has been updated.',
-    });
-  };
-
   const analyzeForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -157,8 +140,8 @@ export default function Home() {
     },
   });
 
-  const generationForm = useForm<z.infer<typeof generationFormSchema>>({
-    resolver: zodResolver(generationFormSchema),
+  const generationForm = useForm<z.infer<typeof qrGenerationFormSchema>>({
+    resolver: zodResolver(qrGenerationFormSchema),
     defaultValues: {
       prompt: '',
     },
@@ -194,36 +177,29 @@ export default function Home() {
     [toast, analyzeForm]
   );
 
-  const onGenerateSubmit = React.useCallback(
-    async (values: z.infer<typeof generationFormSchema>) => {
-      if (!apiKey) {
-        toast({
-          variant: 'destructive',
-          title: 'API Key Required',
-          description: 'Please set your Google AI API key in the settings.',
-        });
-        return;
-      }
+  const onGenerateQrSubmit = React.useCallback(
+    async (values: z.infer<typeof qrGenerationFormSchema>) => {
       setIsGenerating(true);
-      setGeneratedImage(null);
+      setGeneratedQrCode(null);
       try {
-        const imageUrl = await generateImageAction({
-          prompt: values.prompt,
-          apiKey: apiKey,
+        const qrCodeUrl = await QRCode.toDataURL(values.prompt, {
+          width: 512,
+          margin: 2,
+          errorCorrectionLevel: 'H'
         });
-        setGeneratedImage(imageUrl);
-      } catch (error: any) {
+        setGeneratedQrCode(qrCodeUrl);
+      } catch (error) {
         console.error(error);
         toast({
           variant: 'destructive',
-          title: 'Image Generation Error',
-          description: error.message || 'Could not generate image.',
+          title: 'QR Generation Error',
+          description: 'Could not generate QR code.',
         });
       } finally {
         setIsGenerating(false);
       }
     },
-    [toast, apiKey]
+    [toast]
   );
 
   const handleScanSuccess = React.useCallback(
@@ -330,7 +306,7 @@ export default function Home() {
                   </DialogHeader>
                   <TooltipProvider>
                     <Tabs defaultValue="appearance" className="w-full pt-4">
-                      <TabsList className="grid w-full grid-cols-3">
+                      <TabsList className="grid w-full grid-cols-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <TabsTrigger value="appearance">
@@ -340,17 +316,6 @@ export default function Home() {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Appearance</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="api-key">
-                              <KeyRound className="h-5 w-5" />
-                              <span className="sr-only">API Key</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>API Key</p>
                           </TooltipContent>
                         </Tooltip>
                         <Tooltip>
@@ -382,29 +347,6 @@ export default function Home() {
                           </div>
                         </div>
                       </TabsContent>
-                      <TabsContent value="api-key" className="pt-4">
-                        <div className="grid gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="api-key-input">
-                              Google AI API Key
-                            </Label>
-                            <Input
-                              id="api-key-input"
-                              type="password"
-                              value={tempApiKey}
-                              onChange={(e) => setTempApiKey(e.target.value)}
-                              placeholder="Enter your API key"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Your key is stored in your browser's local
-                              storage.
-                            </p>
-                          </div>
-                          <Button onClick={handleSaveApiKey}>
-                            Save API Key
-                          </Button>
-                        </div>
-                      </TabsContent>
                       <TabsContent value="about" className="pt-4">
                         <div className="space-y-2 text-sm text-muted-foreground">
                           <p className="font-semibold text-foreground">
@@ -429,7 +371,7 @@ export default function Home() {
             <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Sparkles className="h-6 w-6" />
+                  <QrCode className="h-6 w-6" />
                   Toolkit
                 </CardTitle>
                 <CardDescription>
@@ -440,12 +382,12 @@ export default function Home() {
                 <Tabs defaultValue="analyze" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="analyze">
-                      <QrCode className="mr-2 h-4 w-4" />
+                      <Sparkles className="mr-2 h-4 w-4" />
                       Analyze
                     </TabsTrigger>
                     <TabsTrigger value="generate">
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Image
+                      <QrCode className="mr-2 h-4 w-4" />
+                      Generate QR
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="analyze" className="pt-6">
@@ -528,7 +470,7 @@ export default function Home() {
                       <Form {...generationForm}>
                         <form
                           onSubmit={generationForm.handleSubmit(
-                            onGenerateSubmit
+                            onGenerateQrSubmit
                           )}
                           className="space-y-4"
                         >
@@ -537,10 +479,10 @@ export default function Home() {
                             name="prompt"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Image Prompt</FormLabel>
+                                <FormLabel>Content to Encode</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="A photorealistic image of a cat wearing a party hat..."
+                                    placeholder="https://example.com, or any text..."
                                     className="resize-y"
                                     {...field}
                                   />
@@ -557,13 +499,13 @@ export default function Home() {
                           >
                             {isGenerating ? (
                               <>
-                                <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                                <QrCode className="mr-2 h-5 w-5 animate-spin" />
                                 Generating...
                               </>
                             ) : (
                               <>
-                                <Sparkles className="mr-2 h-5 w-5" />
-                                Generate Image
+                                <QrCode className="mr-2 h-5 w-5" />
+                                Generate QR Code
                               </>
                             )}
                           </Button>
@@ -572,19 +514,19 @@ export default function Home() {
                       <div className="mt-4 aspect-square w-full">
                         {isGenerating ? (
                           <Skeleton className="h-full w-full rounded-lg" />
-                        ) : generatedImage ? (
+                        ) : generatedQrCode ? (
                           <Image
-                            src={generatedImage}
-                            alt="Generated AI image"
+                            src={generatedQrCode}
+                            alt="Generated QR code"
                             width={512}
                             height={512}
-                            className="h-full w-full rounded-lg object-contain"
+                            className="h-full w-full rounded-lg object-contain bg-white p-4"
                           />
                         ) : (
                           <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
-                            <Sparkles className="h-12 w-12 text-muted-foreground" />
+                            <QrCode className="h-12 w-12 text-muted-foreground" />
                             <p className="mt-2 text-sm text-muted-foreground">
-                              Your generated image will appear here.
+                              Your generated QR code will appear here.
                             </p>
                           </div>
                         )}

@@ -18,6 +18,7 @@ import {
   Cog,
   Palette,
   Info,
+  Download,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -201,6 +202,16 @@ export default function Home() {
     },
     [toast]
   );
+
+  const handleDownloadQr = React.useCallback(() => {
+    if (!generatedQrCode) return;
+    const link = document.createElement('a');
+    link.href = generatedQrCode;
+    link.download = 'scanwise-qrcode.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [generatedQrCode]);
 
   const handleScanSuccess = React.useCallback(
     async (decodedText: string) => {
@@ -511,7 +522,7 @@ export default function Home() {
                           </Button>
                         </form>
                       </Form>
-                      <div className="mt-4 aspect-square w-full">
+                      <div className="aspect-square w-full">
                         {isGenerating ? (
                           <Skeleton className="h-full w-full rounded-lg" />
                         ) : generatedQrCode ? (
@@ -531,6 +542,17 @@ export default function Home() {
                           </div>
                         )}
                       </div>
+                       {generatedQrCode && !isGenerating && (
+                        <Button
+                          onClick={handleDownloadQr}
+                          className="w-full"
+                          variant="secondary"
+                          size="lg"
+                        >
+                          <Download className="mr-2 h-5 w-5" />
+                          Download QR Code
+                        </Button>
+                      )}
                     </div>
                   </TabsContent>
                 </Tabs>

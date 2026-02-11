@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Html5Qrcode } from 'html5-qrcode';
+import QRCode from 'qrcode';
 import {
   QrCode,
   Camera,
@@ -15,8 +16,6 @@ import {
   FileUp,
   Globe,
   Cog,
-  KeyRound,
-  Paintbrush,
   Palette,
   Info,
 } from 'lucide-react';
@@ -37,11 +36,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
-import { analyzeAction, generateImageAction } from '@/app/actions';
+import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -112,8 +110,6 @@ export default function Home() {
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] =
     React.useState(false);
   const [theme, setTheme] = React.useState('light');
-  const [apiKey, setApiKey] = React.useState('');
-  const [tempApiKey, setTempApiKey] = React.useState('');
   const [generatedImage, setGeneratedImage] = React.useState<string | null>(
     null
   );
@@ -125,12 +121,6 @@ export default function Home() {
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
     }
-
-    const storedApiKey = localStorage.getItem('google-api-key');
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      setTempApiKey(storedApiKey);
-    }
   }, []);
 
   // Update DOM and save to local storage when theme changes
@@ -138,15 +128,6 @@ export default function Home() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('scanwise-theme', theme);
   }, [theme]);
-
-  const handleSaveApiKey = () => {
-    setApiKey(tempApiKey);
-    localStorage.setItem('google-api-key', tempApiKey);
-    toast({
-      title: 'API Key Saved',
-      description: 'Your Google AI API key has been saved locally.',
-    });
-  };
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
@@ -198,35 +179,32 @@ export default function Home() {
 
   const onGenerateSubmit = React.useCallback(
     async (values: z.infer<typeof generationFormSchema>) => {
-      if (!apiKey) {
-        toast({
-          variant: 'destructive',
-          title: 'API Key Required',
-          description: 'Please set your Google AI API key in the settings.',
-        });
-        return;
-      }
       setIsGenerating(true);
       setGeneratedImage(null);
       try {
-        const result = await generateImageAction(values.prompt, apiKey);
-        if (result) {
-          setGeneratedImage(result);
-        } else {
-          throw new Error('Image generation failed to return a result.');
-        }
+        const qrCodeDataUrl = await QRCode.toDataURL(values.prompt, {
+          errorCorrectionLevel: 'H',
+          type: 'image/png',
+          quality: 0.9,
+          margin: 1,
+          color: {
+            dark: theme === 'dark' ? '#FFFFFF' : '#000000',
+            light: 'rgba(0,0,0,0)', // Transparent background
+          },
+        });
+        setGeneratedImage(qrCodeDataUrl);
       } catch (error: any) {
         console.error(error);
         toast({
           variant: 'destructive',
-          title: 'Generation Error',
-          description: error.message || 'An unexpected error occurred.',
+          title: 'QR Code Generation Error',
+          description: error.message || 'Could not generate QR code.',
         });
       } finally {
         setIsGenerating(false);
       }
     },
-    [apiKey, toast]
+    [toast, theme]
   );
 
   const handleScanSuccess = React.useCallback(
@@ -333,7 +311,7 @@ export default function Home() {
                   </DialogHeader>
                   <TooltipProvider>
                     <Tabs defaultValue="appearance" className="w-full pt-4">
-                      <TabsList className="grid w-full grid-cols-3">
+                      <TabsList className="grid w-full grid-cols-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <TabsTrigger value="appearance">
@@ -343,17 +321,6 @@ export default function Home() {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Appearance</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="api-key">
-                              <KeyRound className="h-5 w-5" />
-                              <span className="sr-only">API Key</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>API Key</p>
                           </TooltipContent>
                         </Tooltip>
                         <Tooltip>
@@ -385,26 +352,6 @@ export default function Home() {
                           </div>
                         </div>
                       </TabsContent>
-                      <TabsContent value="api-key" className="pt-4">
-                        <div className="space-y-3">
-                          <Label htmlFor="api-key-input">
-                            Google AI API Key
-                          </Label>
-                          <Input
-                            id="api-key-input"
-                            type="password"
-                            value={tempApiKey}
-                            onChange={(e) => setTempApiKey(e.target.value)}
-                            placeholder="Enter your API key"
-                          />
-                          <Button
-                            onClick={handleSaveApiKey}
-                            className="w-full"
-                          >
-                            Save API Key
-                          </Button>
-                        </div>
-                      </TabsContent>
                       <TabsContent value="about" className="pt-4">
                         <div className="space-y-2 text-sm text-muted-foreground">
                           <p className="font-semibold text-foreground">
@@ -433,7 +380,7 @@ export default function Home() {
                   Toolkit
                 </CardTitle>
                 <CardDescription>
-                  Analyze QR codes or generate QR-themed images.
+                  Analyze or generate QR codes.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -444,7 +391,7 @@ export default function Home() {
                       Analyze
                     </TabsTrigger>
                     <TabsTrigger value="generate">
-                      <Paintbrush className="mr-2 h-4 w-4" />
+                      <QrCode className="mr-2 h-4 w-4" />
                       Generate
                     </TabsTrigger>
                   </TabsList>
@@ -537,10 +484,10 @@ export default function Home() {
                             name="prompt"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Image Prompt</FormLabel>
+                                <FormLabel>Content for QR Code</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="e.g., A QR code made of futuristic neon lights..."
+                                    placeholder="Enter text or a URL to encode..."
                                     className="resize-y"
                                     {...field}
                                   />
@@ -562,8 +509,8 @@ export default function Home() {
                               </>
                             ) : (
                               <>
-                                <Paintbrush className="mr-2 h-5 w-5" />
-                                Generate Image
+                                <QrCode className="mr-2 h-5 w-5" />
+                                Generate QR Code
                               </>
                             )}
                           </Button>
@@ -575,16 +522,16 @@ export default function Home() {
                         ) : generatedImage ? (
                           <Image
                             src={generatedImage}
-                            alt="Generated QR-themed image"
+                            alt="Generated QR code"
                             width={512}
                             height={512}
-                            className="h-full w-full rounded-lg object-cover"
+                            className="h-full w-full rounded-lg object-contain"
                           />
                         ) : (
                           <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
-                            <Paintbrush className="h-12 w-12 text-muted-foreground" />
+                            <QrCode className="h-12 w-12 text-muted-foreground" />
                             <p className="mt-2 text-sm text-muted-foreground">
-                              Your generated image will appear here.
+                              Your generated QR code will appear here.
                             </p>
                           </div>
                         )}

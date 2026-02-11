@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export type QrType =
   | 'Website'
   | 'Payment'
@@ -23,10 +21,3 @@ export type AnalysisResult = {
   hiddenVariables?: string[];
   qrContent: string;
 };
-
-export const GenerateImageInputSchema = z.object({
-  prompt: z.string().describe('The user prompt for image generation.'),
-  apiKey: z.string().describe('The Google AI API key.'),
-});
-
-export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;

@@ -576,7 +576,7 @@ export default function Home() {
                     <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
-                  <ScrollArea className="h-[calc(100vh-22rem)] pr-4">
+                  <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)] pr-4">
                     <div className="space-y-3">
                       {scanHistory.map((item, index) => (
                         <HistoryItem

@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'ScanWise',
+  title: 'Scanomer',
   description: 'Scan QR codes with confidence. A neutral interpretation engine.',
 };
 

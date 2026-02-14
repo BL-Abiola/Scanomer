@@ -288,7 +288,7 @@ export default function Home() {
     <>
       <div className="min-h-screen w-full">
         <header className="fixed top-0 left-0 right-0 z-20 border-b bg-background/80 backdrop-blur-lg">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+          <div className="container mx-auto flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
               <h1 className="text-xl font-bold tracking-tight">ScanWise</h1>
@@ -318,28 +318,14 @@ export default function Home() {
                   <TooltipProvider>
                     <Tabs defaultValue="appearance" className="w-full pt-4">
                       <TabsList className="grid w-full grid-cols-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="appearance">
-                              <Palette className="h-5 w-5" />
-                              <span className="sr-only">Appearance</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Appearance</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="about">
-                              <Info className="h-5 w-5" />
-                              <span className="sr-only">About</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>About</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <TabsTrigger value="appearance" className="gap-2">
+                          <Palette className="h-5 w-5" />
+                          <span className="hidden sm:inline">Appearance</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="about" className="gap-2">
+                          <Info className="h-5 w-5" />
+                          <span className="hidden sm:inline">About</span>
+                        </TabsTrigger>
                       </TabsList>
                       <TabsContent value="appearance" className="pt-4">
                         <div className="grid gap-4">
@@ -377,7 +363,7 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
+        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
             <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
               <CardHeader>

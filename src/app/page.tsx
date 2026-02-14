@@ -113,7 +113,7 @@ export default function Home() {
   
   // On mount, load settings from local storage
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem('scanguard-theme');
+    const storedTheme = localStorage.getItem('scanomer-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
     }
@@ -122,7 +122,7 @@ export default function Home() {
   // Update DOM and save to local storage when theme changes
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('scanguard-theme', theme);
+    localStorage.setItem('scanomer-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -202,7 +202,7 @@ export default function Home() {
     if (!generatedQrCode) return;
     const link = document.createElement('a');
     link.href = generatedQrCode;
-    link.download = 'scanguard-qrcode.png';
+    link.download = 'scanomer-qrcode.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -286,11 +286,11 @@ export default function Home() {
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-bold tracking-tight">ScanGuard</h1>
+              <h1 className="text-xl font-bold tracking-tight">Scanomer</h1>
             </div>
             <div className="flex items-center gap-4">
               <p className="hidden text-sm text-muted-foreground md:block">
-                Your Guardian for QR Code Safety
+                A Neutral QR Code Interpretation Engine
               </p>
               <Dialog>
                 <DialogTrigger asChild>
@@ -343,7 +343,7 @@ export default function Home() {
                           <div>
                               <h3 className="font-semibold text-foreground">Purpose</h3>
                               <p className="text-muted-foreground mt-1">
-                                  ScanGuard is your guardian for QR code safety, designed for transparency and security. Scan with confidence, knowing that ScanGuard is here to help you verify the content of any QR code before you commit to its action.
+                                  Scanomer is a neutral QR code interpretation engine, designed for transparency and security. Scan with confidence, knowing that Scanomer is here to help you verify the content of any QR code before you commit to its action.
                               </p>
                           </div>
                           <div>

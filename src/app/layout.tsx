@@ -5,8 +5,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'ScanGuard',
-  description: 'Your Guardian for QR Code Safety',
+  title: 'Scanomer',
+  description: 'A Neutral QR Code Interpretation Engine',
 };
 
 export default function RootLayout({

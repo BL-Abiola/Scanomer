@@ -19,6 +19,7 @@ import {
   Palette,
   Info,
   Download,
+  Mail
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -302,7 +303,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg shadow-2xl shadow-black/20">
+                <DialogContent className="sm:max-w-md rounded-lg shadow-lg">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -338,14 +339,32 @@ export default function Home() {
                       </div>
                     </TabsContent>
                     <TabsContent value="about" className="pt-4">
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <p className="font-semibold text-foreground">
-                          ScanGuard v1.0
-                        </p>
-                        <p>
-                          Your guardian for QR code safety, designed for
-                          transparency and security. Scan with confidence.
-                        </p>
+                      <div className="space-y-6 text-sm">
+                          <div>
+                              <h3 className="font-semibold text-foreground">Purpose</h3>
+                              <p className="text-muted-foreground mt-1">
+                                  ScanGuard is your guardian for QR code safety, designed for transparency and security. Scan with confidence, knowing that ScanGuard is here to help you verify the content of any QR code before you commit to its action.
+                              </p>
+                          </div>
+                          <div>
+                              <h3 className="font-semibold text-foreground">Developer</h3>
+                              <p className="text-muted-foreground mt-1">
+                                  Built with Firebase Studio
+                              </p>
+                          </div>
+                          <div>
+                              <h3 className="font-semibold text-foreground">Contact</h3>
+                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                  <a href="https://twitter.com/firebase" target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline" }))}>
+                                      <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4 fill-current"><title>X</title><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+                                      X
+                                  </a>
+                                  <a href="mailto:support@example.com" className={cn(buttonVariants({ variant: "outline" }))}>
+                                      <Mail className="mr-2 h-4 w-4" />
+                                      Email
+                                  </a>
+                              </div>
+                          </div>
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -357,7 +376,7 @@ export default function Home() {
 
         <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
-            <Card className="shadow-2xl shadow-black/20">
+            <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <QrCode className="h-6 w-6" />
@@ -539,7 +558,7 @@ export default function Home() {
           </div>
 
           <aside className="w-full lg:col-span-2">
-            <Card className="shadow-2xl shadow-black/20">
+            <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <History className="h-6 w-6" />
@@ -586,7 +605,7 @@ export default function Home() {
         open={isSelectionDialogOpen}
         onOpenChange={setIsSelectionDialogOpen}
       >
-        <AlertDialogContent className="rounded-lg shadow-2xl shadow-black/20">
+        <AlertDialogContent className="rounded-lg shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
             <AlertDialogDescription>
@@ -624,7 +643,7 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-2xl shadow-black/20">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-lg">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl md:text-2xl">
                 Analysis Result

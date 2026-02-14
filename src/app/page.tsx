@@ -349,7 +349,7 @@ export default function Home() {
                           <div>
                               <h3 className="font-semibold text-foreground">Developer</h3>
                               <p className="text-muted-foreground mt-1">
-                                  Built with Firebase Studio
+                                  BL_Abiola
                               </p>
                           </div>
                           <div>

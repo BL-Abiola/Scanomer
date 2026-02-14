@@ -112,7 +112,7 @@ export default function Home() {
   
   // On mount, load settings from local storage
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem('scanwise-theme');
+    const storedTheme = localStorage.getItem('scanguard-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
     }
@@ -121,7 +121,7 @@ export default function Home() {
   // Update DOM and save to local storage when theme changes
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('scanwise-theme', theme);
+    localStorage.setItem('scanguard-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -201,7 +201,7 @@ export default function Home() {
     if (!generatedQrCode) return;
     const link = document.createElement('a');
     link.href = generatedQrCode;
-    link.download = 'scanwise-qrcode.png';
+    link.download = 'scanguard-qrcode.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -285,11 +285,11 @@ export default function Home() {
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-bold tracking-tight">ScanWise</h1>
+              <h1 className="text-xl font-bold tracking-tight">ScanGuard</h1>
             </div>
             <div className="flex items-center gap-4">
               <p className="hidden text-sm text-muted-foreground md:block">
-                A Neutral QR Code Interpretation Engine
+                Your Guardian for QR Code Safety
               </p>
               <Dialog>
                 <DialogTrigger asChild>
@@ -340,10 +340,10 @@ export default function Home() {
                     <TabsContent value="about" className="pt-4">
                       <div className="space-y-2 text-sm text-muted-foreground">
                         <p className="font-semibold text-foreground">
-                          ScanWise v1.0
+                          ScanGuard v1.0
                         </p>
                         <p>
-                          A neutral QR code interpretation engine designed for
+                          Your guardian for QR code safety, designed for
                           transparency and security. Scan with confidence.
                         </p>
                       </div>

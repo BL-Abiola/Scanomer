@@ -72,12 +72,6 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -315,62 +309,46 @@ export default function Home() {
                       Manage app settings and view information.
                     </DialogDescription>
                   </DialogHeader>
-                  <TooltipProvider>
-                    <Tabs defaultValue="appearance" className="w-full pt-4">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="appearance" className="gap-2">
-                              <Palette className="h-5 w-5" />
-                              <span className="hidden sm:inline">Appearance</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent className="hidden sm:block">
-                            <p>Appearance</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <TabsTrigger value="about" className="gap-2">
-                              <Info className="h-5 w-5" />
-                              <span className="hidden sm:inline">About</span>
-                            </TabsTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent className="hidden sm:block">
-                            <p>About</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TabsList>
-                      <TabsContent value="appearance" className="pt-4">
-                        <div className="grid gap-4">
-                          <div className="flex items-center justify-between rounded-lg border p-3">
-                            <Label
-                              htmlFor="dark-mode"
-                              className="text-foreground"
-                            >
-                              Dark Mode
-                            </Label>
-                            <Switch
-                              id="dark-mode"
-                              checked={theme === 'dark'}
-                              onCheckedChange={toggleTheme}
-                            />
-                          </div>
+                  <Tabs defaultValue="appearance" className="w-full pt-4">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="appearance" className="gap-2">
+                        <Palette className="h-5 w-5" />
+                        <span className="hidden sm:inline">Appearance</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="about" className="gap-2">
+                        <Info className="h-5 w-5" />
+                        <span className="hidden sm:inline">About</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="appearance" className="pt-4">
+                      <div className="grid gap-4">
+                        <div className="flex items-center justify-between rounded-lg border p-3">
+                          <Label
+                            htmlFor="dark-mode"
+                            className="text-foreground"
+                          >
+                            Dark Mode
+                          </Label>
+                          <Switch
+                            id="dark-mode"
+                            checked={theme === 'dark'}
+                            onCheckedChange={toggleTheme}
+                          />
                         </div>
-                      </TabsContent>
-                      <TabsContent value="about" className="pt-4">
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <p className="font-semibold text-foreground">
-                            ScanWise v1.0
-                          </p>
-                          <p>
-                            A neutral QR code interpretation engine designed for
-                            transparency and security. Scan with confidence.
-                          </p>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </TooltipProvider>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="about" className="pt-4">
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <p className="font-semibold text-foreground">
+                          ScanWise v1.0
+                        </p>
+                        <p>
+                          A neutral QR code interpretation engine designed for
+                          transparency and security. Scan with confidence.
+                        </p>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </DialogContent>
               </Dialog>
             </div>

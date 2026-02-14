@@ -3,12 +3,10 @@
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Html5Qrcode } from 'html5-qrcode';
-import QRCode from 'qrcode';
 import {
   QrCode,
   Camera,
@@ -19,9 +17,7 @@ import {
   Cog,
   Palette,
   Info,
-  Download,
   Mail,
-  KeyRound,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -43,7 +39,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
-import { analyzeAction, generateQrAction } from '@/app/actions';
+import { analyzeAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -75,14 +71,9 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
-import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
-});
-
-const qrGenerationFormSchema = z.object({
-  prompt: z.string().min(1, 'Prompt cannot be empty.'),
 });
 
 const QrScanner = dynamic(
@@ -109,23 +100,12 @@ export default function Home() {
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] =
     React.useState(false);
   const [theme, setTheme] = React.useState('light');
-  const [generatedQrCode, setGeneratedQrCode] = React.useState<string | null>(
-    null
-  );
-  const [isGenerating, setIsGenerating] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState('');
-  const [inputApiKey, setInputApiKey] = React.useState('');
 
   // On mount, load settings from local storage
   React.useEffect(() => {
     const storedTheme = localStorage.getItem('scanomer-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
-    }
-    const storedApiKey = localStorage.getItem('scanomer-api-key');
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      setInputApiKey(storedApiKey);
     }
   }, []);
 
@@ -145,22 +125,6 @@ export default function Home() {
       qrContent: '',
     },
   });
-
-  const generationForm = useForm<z.infer<typeof qrGenerationFormSchema>>({
-    resolver: zodResolver(qrGenerationFormSchema),
-    defaultValues: {
-      prompt: '',
-    },
-  });
-
-  const handleSaveApiKey = React.useCallback(() => {
-    localStorage.setItem('scanomer-api-key', inputApiKey);
-    setApiKey(inputApiKey);
-    toast({
-      title: 'API Key Saved',
-      description: 'Your Google AI API key has been saved successfully.',
-    });
-  }, [inputApiKey, toast]);
 
   const onAnalyzeSubmit = React.useCallback(
     async (values: z.infer<typeof formSchema>) => {
@@ -191,55 +155,6 @@ export default function Home() {
     },
     [toast, analyzeForm]
   );
-
-  const onGenerateQrSubmit = React.useCallback(
-    async (values: z.infer<typeof qrGenerationFormSchema>) => {
-      setIsGenerating(true);
-      setGeneratedQrCode(null);
-
-      if (!apiKey) {
-        toast({
-          variant: 'destructive',
-          title: 'API Key Required',
-          description:
-            'Please add your Google AI API key in the settings to use this feature.',
-        });
-        setIsGenerating(false);
-        return;
-      }
-
-      try {
-        const formattedContent = await generateQrAction(values.prompt, apiKey);
-        const qrCodeUrl = await QRCode.toDataURL(formattedContent, {
-          width: 512,
-          margin: 2,
-          errorCorrectionLevel: 'H',
-        });
-        setGeneratedQrCode(qrCodeUrl);
-      } catch (error) {
-        console.error(error);
-        toast({
-          variant: 'destructive',
-          title: 'QR Generation Error',
-          description:
-            (error as Error).message || 'Could not generate QR code.',
-        });
-      } finally {
-        setIsGenerating(false);
-      }
-    },
-    [toast, apiKey]
-  );
-
-  const handleDownloadQr = React.useCallback(() => {
-    if (!generatedQrCode) return;
-    const link = document.createElement('a');
-    link.href = generatedQrCode;
-    link.download = 'scanomer-qrcode.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [generatedQrCode]);
 
   const handleScanSuccess = React.useCallback(
     async (decodedText: string) => {
@@ -344,7 +259,7 @@ export default function Home() {
                     </DialogDescription>
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="appearance">
                         <Palette className="mr-2 h-5 w-5" />
                         Appearance
@@ -352,10 +267,6 @@ export default function Home() {
                       <TabsTrigger value="about">
                         <Info className="mr-2 h-5 w-5" />
                         About
-                      </TabsTrigger>
-                      <TabsTrigger value="api-key">
-                        <KeyRound className="mr-2 h-5 w-5" />
-                        API Key
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
@@ -434,30 +345,6 @@ export default function Home() {
                         </div>
                       </div>
                     </TabsContent>
-                    <TabsContent value="api-key" className="pt-4">
-                      <div className="grid gap-4">
-                        <div className="space-y-2">
-                          <h3 className="font-semibold text-foreground">
-                            Google AI API Key
-                          </h3>
-                          <p className="text-muted-foreground text-sm">
-                            A Google AI API key is required for the AI-powered generation features. Your key is stored securely in your browser's local storage and is never shared.
-                          </p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Input
-                            id="apiKey"
-                            type="password"
-                            value={inputApiKey}
-                            onChange={(e) => setInputApiKey(e.target.value)}
-                            placeholder="Enter your API key"
-                          />
-                          <Button type="submit" onClick={handleSaveApiKey}>
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    </TabsContent>
                   </Tabs>
                 </DialogContent>
               </Dialog>
@@ -470,181 +357,87 @@ export default function Home() {
             <Card className="shadow-lg bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <QrCode className="h-6 w-6" />
-                  Toolkit
+                  <Sparkles className="h-6 w-6" />
+                  Analyzer
                 </CardTitle>
                 <CardDescription>
-                  Analyze or generate QR codes.
+                  Scan or paste QR code content to analyze it.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="analyze" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="analyze">
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Analyze
-                    </TabsTrigger>
-                    <TabsTrigger value="generate">
-                      <QrCode className="mr-2 h-4 w-4" />
-                      Generate
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="analyze" className="pt-6">
-                    <div className="space-y-6">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsSelectionDialogOpen(true)}
-                        disabled={isLoading}
-                        className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
-                      >
-                        <Camera className="h-10 w-10" />
-                        <span>Scan or Upload</span>
-                      </Button>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageUpload}
-                        accept="image/*"
-                        className="hidden"
-                      />
+                <div className="space-y-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setIsSelectionDialogOpen(true)}
+                    disabled={isLoading}
+                    className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
+                  >
+                    <Camera className="h-10 w-10" />
+                    <span>Scan or Upload</span>
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
 
-                      <div className="flex items-center gap-4">
-                        <div className="flex-grow border-t"></div>
-                        <span className="text-sm text-muted-foreground">
-                          OR
-                        </span>
-                        <div className="flex-grow border-t"></div>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-grow border-t"></div>
+                    <span className="text-sm text-muted-foreground">
+                      OR
+                    </span>
+                    <div className="flex-grow border-t"></div>
+                  </div>
 
-                      <Form {...analyzeForm}>
-                        <form
-                          onSubmit={analyzeForm.handleSubmit(onAnalyzeSubmit)}
-                          className="space-y-4"
-                        >
-                          <FormField
-                            control={analyzeForm.control}
-                            name="qrContent"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="sr-only">
-                                  QR Code Content
-                                </FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Paste raw QR code content..."
-                                    className="min-h-[60px] resize-none text-base"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="submit"
-                            size="lg"
-                            disabled={isLoading}
-                            className="w-full"
-                          >
-                            {isLoading ? (
-                              <>
-                                <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                                Analyzing...
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="mr-2 h-5 w-5" />
-                                Analyze Content
-                              </>
-                            )}
-                          </Button>
-                        </form>
-                      </Form>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="generate" className="pt-6">
-                    <div className="space-y-4">
-                      <Form {...generationForm}>
-                        <form
-                          onSubmit={generationForm.handleSubmit(
-                            onGenerateQrSubmit
-                          )}
-                          className="space-y-4"
-                        >
-                          <FormField
-                            control={generationForm.control}
-                            name="prompt"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Describe the QR Code</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="e.g., a URL, 'wifi for MyNet', or a vCard..."
-                                    className="resize-y"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="submit"
-                            size="lg"
-                            disabled={isGenerating}
-                            className="w-full"
-                          >
-                            {isGenerating ? (
-                              <>
-                                <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                                Generating...
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="mr-2 h-5 w-5" />
-                                Generate with AI
-                              </>
-                            )}
-                          </Button>
-                        </form>
-                      </Form>
-                      <div className="aspect-square w-full">
-                        {isGenerating ? (
-                          <Skeleton className="h-full w-full rounded-lg" />
-                        ) : generatedQrCode ? (
-                          <Image
-                            src={generatedQrCode}
-                            alt="Generated QR code"
-                            width={512}
-                            height={512}
-                            className="h-full w-full rounded-lg object-contain bg-white p-4"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
-                            <QrCode className="h-12 w-12 text-muted-foreground" />
-                            <p className="mt-2 text-center text-sm text-muted-foreground">
-                              Describe the content for your QR code above. It
-                              will appear here.
-                            </p>
-                          </div>
+                  <Form {...analyzeForm}>
+                    <form
+                      onSubmit={analyzeForm.handleSubmit(onAnalyzeSubmit)}
+                      className="space-y-4"
+                    >
+                      <FormField
+                        control={analyzeForm.control}
+                        name="qrContent"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="sr-only">
+                              QR Code Content
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Paste raw QR code content..."
+                                className="min-h-[60px] resize-none text-base"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </div>
-                      {generatedQrCode && !isGenerating && (
-                        <Button
-                          onClick={handleDownloadQr}
-                          className="w-full"
-                          variant="secondary"
-                          size="lg"
-                        >
-                          <Download className="mr-2 h-5 w-5" />
-                          Download QR Code
-                        </Button>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                      />
+                      <Button
+                        type="submit"
+                        size="lg"
+                        disabled={isLoading}
+                        className="w-full"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-5 w-5" />
+                            Analyze Content
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </div>
               </CardContent>
             </Card>
           </div>

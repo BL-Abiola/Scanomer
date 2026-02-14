@@ -656,16 +656,16 @@ export default function Home() {
                   <span className="text-xl font-semibold">Scan History</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-0">
+              <CardContent>
                 {isLoading && scanHistory.length === 0 ? (
-                  <div className="space-y-4 px-4 sm:px-6">
+                  <div className="space-y-4">
                     <Skeleton className="h-20 w-full rounded-lg" />
                     <Skeleton className="h-20 w-full rounded-lg" />
                     <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
                   <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)]">
-                    <div className="space-y-3 px-4 sm:px-6">
+                    <div className="space-y-3">
                       {scanHistory.map((item, index) => (
                         <HistoryItem
                           key={`${item.qrContent}-${index}`}
@@ -676,7 +676,7 @@ export default function Home() {
                     </div>
                   </ScrollArea>
                 ) : (
-                  <div className="mx-4 flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center sm:mx-6 lg:h-[calc(100vh-22rem)]">
+                  <div className="flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center lg:h-[calc(100vh-22rem)]">
                     <History className="h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">
                       No Scans Yet

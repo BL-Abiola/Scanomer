@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -18,6 +17,7 @@ import {
   Palette,
   Info,
   Mail,
+  ScanLine,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -71,6 +71,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
+import { QrGenerator } from '@/components/qr-generator';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -233,7 +234,7 @@ export default function Home() {
         <header className="sticky top-0 z-20 border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
-              <QrCode className="h-8 w-8 text-primary" />
+              <ScanLine className="h-8 w-8 text-primary" />
               <h1 className="text-xl font-bold tracking-tight">Scanomer</h1>
             </div>
             <div className="flex items-center gap-4">
@@ -358,86 +359,103 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <Sparkles className="h-6 w-6" />
-                  Analyzer
+                  Tools
                 </CardTitle>
                 <CardDescription>
-                  Scan or paste QR code content to analyze it.
+                  Scan, analyze, or generate QR codes.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setIsSelectionDialogOpen(true)}
-                    disabled={isLoading}
-                    className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
-                  >
-                    <Camera className="h-10 w-10" />
-                    <span>Scan or Upload</span>
-                  </Button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-
-                  <div className="flex items-center gap-4">
-                    <div className="flex-grow border-t"></div>
-                    <span className="text-sm text-muted-foreground">
-                      OR
-                    </span>
-                    <div className="flex-grow border-t"></div>
-                  </div>
-
-                  <Form {...analyzeForm}>
-                    <form
-                      onSubmit={analyzeForm.handleSubmit(onAnalyzeSubmit)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={analyzeForm.control}
-                        name="qrContent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="sr-only">
-                              QR Code Content
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Paste raw QR code content..."
-                                className="min-h-[60px] resize-none text-base"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                <Tabs defaultValue="analyzer" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="analyzer">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Analyzer
+                    </TabsTrigger>
+                    <TabsTrigger value="generator">
+                      <QrCode className="mr-2 h-4 w-4" />
+                      Generator
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="analyzer" className="pt-6">
+                    <div className="space-y-6">
                       <Button
-                        type="submit"
+                        type="button"
+                        variant="outline"
                         size="lg"
+                        onClick={() => setIsSelectionDialogOpen(true)}
                         disabled={isLoading}
-                        className="w-full"
+                        className="flex h-40 w-full flex-col items-center justify-center gap-2 text-base"
                       >
-                        {isLoading ? (
-                          <>
-                            <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="mr-2 h-5 w-5" />
-                            Analyze Content
-                          </>
-                        )}
+                        <Camera className="h-10 w-10" />
+                        <span>Scan or Upload</span>
                       </Button>
-                    </form>
-                  </Form>
-                </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+
+                      <div className="flex items-center gap-4">
+                        <div className="flex-grow border-t"></div>
+                        <span className="text-sm text-muted-foreground">
+                          OR
+                        </span>
+                        <div className="flex-grow border-t"></div>
+                      </div>
+
+                      <Form {...analyzeForm}>
+                        <form
+                          onSubmit={analyzeForm.handleSubmit(onAnalyzeSubmit)}
+                          className="space-y-4"
+                        >
+                          <FormField
+                            control={analyzeForm.control}
+                            name="qrContent"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="sr-only">
+                                  QR Code Content
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Paste raw QR code content..."
+                                    className="min-h-[60px] resize-none text-base"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            size="lg"
+                            disabled={isLoading}
+                            className="w-full"
+                          >
+                            {isLoading ? (
+                              <>
+                                <Sparkles className="mr-2 h-5 w-5 animate-spin" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="mr-2 h-5 w-5" />
+                                Analyze Content
+                              </>
+                            )}
+                          </Button>
+                        </form>
+                      </Form>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="generator" className="pt-6">
+                    <QrGenerator />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>

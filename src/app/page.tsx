@@ -19,7 +19,7 @@ import {
   Palette,
   Info,
   Download,
-  Mail
+  Mail,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -41,7 +41,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalysisResult } from '@/lib/types';
-import { analyzeAction } from '@/app/actions';
+import { analyzeAction, generateQrAction } from '@/app/actions';
 import { AnalysisResultDisplay } from '@/components/analysis-result';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -79,7 +79,7 @@ const formSchema = z.object({
 });
 
 const qrGenerationFormSchema = z.object({
-  prompt: z.string().min(1, 'Content cannot be empty.'),
+  prompt: z.string().min(1, 'Prompt cannot be empty.'),
 });
 
 const QrScanner = dynamic(
@@ -110,7 +110,7 @@ export default function Home() {
     null
   );
   const [isGenerating, setIsGenerating] = React.useState(false);
-  
+
   // On mount, load settings from local storage
   React.useEffect(() => {
     const storedTheme = localStorage.getItem('scanomer-theme');
@@ -178,10 +178,15 @@ export default function Home() {
       setIsGenerating(true);
       setGeneratedQrCode(null);
       try {
-        const qrCodeUrl = await QRCode.toDataURL(values.prompt, {
+        const formattedContent = await generateQrAction(values.prompt);
+        if (!formattedContent) {
+          throw new Error('AI could not process the request.');
+        }
+
+        const qrCodeUrl = await QRCode.toDataURL(formattedContent, {
           width: 512,
           margin: 2,
-          errorCorrectionLevel: 'H'
+          errorCorrectionLevel: 'H',
         });
         setGeneratedQrCode(qrCodeUrl);
       } catch (error) {
@@ -189,7 +194,8 @@ export default function Home() {
         toast({
           variant: 'destructive',
           title: 'QR Generation Error',
-          description: 'Could not generate QR code.',
+          description:
+            (error as Error).message || 'Could not generate QR code.',
         });
       } finally {
         setIsGenerating(false);
@@ -281,8 +287,8 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen w-full">
-        <header className="fixed top-0 left-0 right-0 z-20 border-b bg-background">
+      <div className="min-h-screen w-full bg-background">
+        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-xl">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
@@ -303,7 +309,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg shadow-lg">
+                <DialogContent className="sm:max-w-md rounded-lg">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -312,11 +318,11 @@ export default function Home() {
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
                     <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="appearance" className="gap-2">
+                      <TabsTrigger value="appearance">
                         <Palette className="h-5 w-5" />
                         <span className="hidden sm:inline">Appearance</span>
                       </TabsTrigger>
-                      <TabsTrigger value="about" className="gap-2">
+                      <TabsTrigger value="about">
                         <Info className="h-5 w-5" />
                         <span className="hidden sm:inline">About</span>
                       </TabsTrigger>
@@ -340,31 +346,57 @@ export default function Home() {
                     </TabsContent>
                     <TabsContent value="about" className="pt-4">
                       <div className="space-y-6 text-sm">
-                          <div>
-                              <h3 className="font-semibold text-foreground">Purpose</h3>
-                              <p className="text-muted-foreground mt-1">
-                                  Scanomer is a neutral QR code interpretation engine, designed for transparency and security. Scan with confidence, knowing that Scanomer is here to help you verify the content of any QR code before you commit to its action.
-                              </p>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Purpose
+                          </h3>
+                          <p className="text-muted-foreground mt-1">
+                            Scanomer is a neutral QR code interpretation
+                            engine, designed for transparency and security. Scan
+                            with confidence, knowing that Scanomer is here to
+                            help you verify the content of any QR code before
+                            you commit to its action.
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Developer
+                          </h3>
+                          <p className="text-muted-foreground mt-1">
+                            BL_Abiola
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">
+                            Contact
+                          </h3>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <a
+                              href="https://x.com/BL_Abiola"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(buttonVariants({ variant: 'outline' }))}
+                            >
+                              <svg
+                                role="img"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="mr-2 h-4 w-4 fill-current"
+                              >
+                                <title>X</title>
+                                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                              </svg>
+                              X
+                            </a>
+                            <a
+                              href="mailto:Abiolalabs29@gmail.com"
+                              className={cn(buttonVariants({ variant: 'outline' }))}
+                            >
+                              <Mail className="mr-2 h-4 w-4" />
+                              Email
+                            </a>
                           </div>
-                          <div>
-                              <h3 className="font-semibold text-foreground">Developer</h3>
-                              <p className="text-muted-foreground mt-1">
-                                  BL_Abiola
-                              </p>
-                          </div>
-                          <div>
-                              <h3 className="font-semibold text-foreground">Contact</h3>
-                              <div className="mt-2 grid grid-cols-2 gap-2">
-                                  <a href="https://x.com/BL_Abiola" target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline" }))}>
-                                      <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4 fill-current"><title>X</title><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
-                                      X
-                                  </a>
-                                  <a href="mailto:Abiolalabs29@gmail.com" className={cn(buttonVariants({ variant: "outline" }))}>
-                                      <Mail className="mr-2 h-4 w-4" />
-                                      Email
-                                  </a>
-                              </div>
-                          </div>
+                        </div>
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -374,7 +406,7 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
+        <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-8 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
             <Card className="shadow-lg">
               <CardHeader>
@@ -395,7 +427,7 @@ export default function Home() {
                     </TabsTrigger>
                     <TabsTrigger value="generate">
                       <QrCode className="mr-2 h-4 w-4" />
-                      Generate QR
+                      Generate
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="analyze" className="pt-6">
@@ -487,10 +519,10 @@ export default function Home() {
                             name="prompt"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Content to Encode</FormLabel>
+                                <FormLabel>Describe the QR Code</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="https://example.com, or any text..."
+                                    placeholder="e.g., a URL, 'wifi for MyNet, pass: 123', or 'vcard for John Doe'"
                                     className="resize-y"
                                     {...field}
                                   />
@@ -507,13 +539,13 @@ export default function Home() {
                           >
                             {isGenerating ? (
                               <>
-                                <QrCode className="mr-2 h-5 w-5 animate-spin" />
+                                <Sparkles className="mr-2 h-5 w-5 animate-spin" />
                                 Generating...
                               </>
                             ) : (
                               <>
-                                <QrCode className="mr-2 h-5 w-5" />
-                                Generate QR Code
+                                <Sparkles className="mr-2 h-5 w-5" />
+                                Generate with AI
                               </>
                             )}
                           </Button>
@@ -539,7 +571,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                       {generatedQrCode && !isGenerating && (
+                      {generatedQrCode && !isGenerating && (
                         <Button
                           onClick={handleDownloadQr}
                           className="w-full"
@@ -605,7 +637,7 @@ export default function Home() {
         open={isSelectionDialogOpen}
         onOpenChange={setIsSelectionDialogOpen}
       >
-        <AlertDialogContent className="rounded-lg shadow-lg">
+        <AlertDialogContent className="rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
             <AlertDialogDescription>
@@ -643,14 +675,17 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-lg">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl md:text-2xl">
                 Analysis Result
               </AlertDialogTitle>
             </AlertDialogHeader>
             <div className="my-2 md:my-4">
-              <AnalysisResultDisplay result={activeAnalysis} isLoading={false} />
+              <AnalysisResultDisplay
+                result={activeAnalysis}
+                isLoading={false}
+              />
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Go Back</AlertDialogCancel>

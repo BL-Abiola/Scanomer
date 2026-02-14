@@ -325,7 +325,7 @@ export default function Home() {
                               <span className="hidden sm:inline">Appearance</span>
                             </TabsTrigger>
                           </TooltipTrigger>
-                          <TooltipContent className="sm:hidden">
+                          <TooltipContent className="hidden sm:block">
                             <p>Appearance</p>
                           </TooltipContent>
                         </Tooltip>
@@ -336,7 +336,7 @@ export default function Home() {
                               <span className="hidden sm:inline">About</span>
                             </TabsTrigger>
                           </TooltipTrigger>
-                          <TooltipContent className="sm:hidden">
+                          <TooltipContent className="hidden sm:block">
                             <p>About</p>
                           </TooltipContent>
                         </Tooltip>

@@ -104,7 +104,7 @@ export default function Home() {
 
   // On mount, load settings from local storage
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem('scanomer-theme');
+    const storedTheme = localStorage.getItem('scanwise-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
     }
@@ -113,7 +113,7 @@ export default function Home() {
   // Update DOM and save to local storage when theme changes
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('scanomer-theme', theme);
+    localStorage.setItem('scanwise-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -235,7 +235,7 @@ export default function Home() {
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <ScanLine className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-bold tracking-tight">Scanomer</h1>
+              <h1 className="text-xl font-bold tracking-tight">ScanWise</h1>
             </div>
             <div className="flex items-center gap-4">
               <p className="hidden text-sm text-muted-foreground md:block">
@@ -294,9 +294,9 @@ export default function Home() {
                             Purpose
                           </h3>
                           <p className="text-muted-foreground mt-1">
-                            Scanomer is a neutral QR code interpretation
+                            ScanWise is a neutral QR code interpretation
                             engine, designed for transparency and security. Scan
-                            with confidence, knowing that Scanomer is here to
+                            with confidence, knowing that ScanWise is here to
                             help you verify the content of any QR code before
                             you commit to its action.
                           </p>
@@ -468,15 +468,15 @@ export default function Home() {
                   <span className="text-xl font-semibold">Scan History</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {isLoading && scanHistory.length === 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 p-6">
                     <Skeleton className="h-20 w-full rounded-lg" />
                     <Skeleton className="h-20 w-full rounded-lg" />
                     <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
-                  <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)] -mx-6">
+                  <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)]">
                     <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
                       {scanHistory.map((item, index) => (
                         <HistoryItem
@@ -488,7 +488,7 @@ export default function Home() {
                     </div>
                   </ScrollArea>
                 ) : (
-                  <div className="flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed text-center lg:h-[calc(100vh-22rem)]">
+                  <div className="flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed text-center lg:h-[calc(100vh-22rem)] m-6">
                     <History className="h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">
                       No Scans Yet

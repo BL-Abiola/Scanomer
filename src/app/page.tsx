@@ -195,23 +195,20 @@ export default function Home() {
     async (values: z.infer<typeof qrGenerationFormSchema>) => {
       setIsGenerating(true);
       setGeneratedQrCode(null);
-      
+
       if (!apiKey) {
         toast({
           variant: 'destructive',
           title: 'API Key Required',
-          description: 'Please add your Google AI API key in the settings to use this feature.',
+          description:
+            'Please add your Google AI API key in the settings to use this feature.',
         });
         setIsGenerating(false);
         return;
       }
-      
-      try {
-        const formattedContent = await generateQrAction(values.prompt);
-        if (!formattedContent) {
-          throw new Error('AI could not process the request.');
-        }
 
+      try {
+        const formattedContent = await generateQrAction(values.prompt, apiKey);
         const qrCodeUrl = await QRCode.toDataURL(formattedContent, {
           width: 512,
           margin: 2,
@@ -775,5 +772,3 @@ export default function Home() {
     </>
   );
 }
-
-    

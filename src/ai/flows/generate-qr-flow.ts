@@ -5,23 +5,27 @@
  * - generateQrContent - A function that handles the QR code content generation process.
  */
 
-import { ai } from '@/ai/genkit';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'genkit';
 
 const GenerateQrInputSchema = z.string();
 const GenerateQrOutputSchema = z.string();
 
 export async function generateQrContent(
-  prompt: string
+  prompt: string,
+  apiKey: string
 ): Promise<string> {
-  return generateQrFlow(prompt);
-}
+  const ai = genkit({
+    plugins: [googleAI({ apiKey })],
+    model: 'googleai/gemini-2.5-flash',
+  });
 
-const generationPrompt = ai.definePrompt({
-  name: 'generateQrPrompt',
-  input: { schema: GenerateQrInputSchema },
-  output: { schema: GenerateQrOutputSchema },
-  prompt: `You are an expert QR code content formatter. Your task is to convert a user's prompt into the correct string format for a QR code.
+  const generationPrompt = ai.definePrompt({
+    name: 'generateQrPrompt_perRequest',
+    input: { schema: GenerateQrInputSchema },
+    output: { schema: GenerateQrOutputSchema },
+    prompt: `You are an expert QR code content formatter. Your task is to convert a user's prompt into the correct string format for a QR code.
 
 Supported formats:
 - Website URL: (e.g., "https://example.com")
@@ -45,16 +49,8 @@ Examples:
 - Prompt: "a vcard for John Smith, john@smith.com, 555-1234" -> Output: "BEGIN:VCARD\\nVERSION:3.0\\nN:Smith;John\\nFN:John Smith\\nTEL:555-1234\\nEMAIL:john@smith.com\\nEND:VCARD"
 - Prompt: "Just some text" -> Output: "Just some text"
 `,
-});
+  });
 
-const generateQrFlow = ai.defineFlow(
-  {
-    name: 'generateQrFlow',
-    inputSchema: GenerateQrInputSchema,
-    outputSchema: GenerateQrOutputSchema,
-  },
-  async (prompt) => {
-    const { output } = await generationPrompt(prompt);
-    return output || prompt;
-  }
-);
+  const { output } = await generationPrompt(prompt);
+  return output || prompt;
+}

@@ -21,23 +21,29 @@ export async function analyzeAction(
 }
 
 export async function generateQrAction(
-  prompt: string
-): Promise<string | null> {
+  prompt: string,
+  apiKey: string
+): Promise<string> {
   if (!prompt) {
-    return null;
+    throw new Error('Prompt cannot be empty.');
   }
+  if (!apiKey) {
+    throw new Error('API Key is required. Please add it in the settings.');
+  }
+
   try {
-    // The API key is set as an environment variable on the server process
-    // when the user saves it in the settings. For this action, we rely on it being available.
-    if (!process.env.GOOGLE_API_KEY) {
-      throw new Error('API Key not configured on the server.');
+    const result = await generateQrContent(prompt, apiKey);
+    if (!result) {
+      throw new Error('AI returned an empty response.');
     }
-    const result = await generateQrContent(prompt);
     return result;
-  } catch (error) {
-    console.error('Error in generateQrAction:', error);
-    return null;
+  } catch (e: any) {
+    console.error('Upstream error in generateQrAction:', e.message);
+    if (e.message?.includes('API key not valid')) {
+      throw new Error(
+        'Your Google AI API key is invalid. Please check it in settings.'
+      );
+    }
+    throw new Error('The AI service failed to process your request.');
   }
 }
-
-    

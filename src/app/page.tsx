@@ -288,7 +288,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen w-full bg-background">
-        <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b bg-background">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
@@ -309,7 +309,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg">
+                <DialogContent className="sm:max-w-md rounded-lg bg-background">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -319,12 +319,12 @@ export default function Home() {
                   <Tabs defaultValue="appearance" className="w-full pt-4">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="appearance">
-                        <Palette className="h-5 w-5" />
-                        <span className="hidden sm:inline">Appearance</span>
+                        <Palette className="mr-2 h-5 w-5" />
+                        Appearance
                       </TabsTrigger>
                       <TabsTrigger value="about">
-                        <Info className="h-5 w-5" />
-                        <span className="hidden sm:inline">About</span>
+                        <Info className="mr-2 h-5 w-5" />
+                        About
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
@@ -370,12 +370,14 @@ export default function Home() {
                           <h3 className="font-semibold text-foreground">
                             Contact
                           </h3>
-                          <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <a
                               href="https://x.com/BL_Abiola"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={cn(buttonVariants({ variant: 'outline' }))}
+                              className={cn(
+                                buttonVariants({ variant: 'outline' })
+                              )}
                             >
                               <svg
                                 role="img"
@@ -390,7 +392,9 @@ export default function Home() {
                             </a>
                             <a
                               href="mailto:Abiolalabs29@gmail.com"
-                              className={cn(buttonVariants({ variant: 'outline' }))}
+                              className={cn(
+                                buttonVariants({ variant: 'outline' })
+                              )}
                             >
                               <Mail className="mr-2 h-4 w-4" />
                               Email
@@ -408,7 +412,7 @@ export default function Home() {
 
         <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-8 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <QrCode className="h-6 w-6" />
@@ -565,8 +569,9 @@ export default function Home() {
                         ) : (
                           <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
                             <QrCode className="h-12 w-12 text-muted-foreground" />
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              Your generated QR code will appear here.
+                            <p className="mt-2 text-center text-sm text-muted-foreground">
+                              Describe the content for your QR code above. It
+                              will appear here.
                             </p>
                           </div>
                         )}
@@ -590,7 +595,7 @@ export default function Home() {
           </div>
 
           <aside className="w-full lg:col-span-2">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <History className="h-6 w-6" />
@@ -637,7 +642,7 @@ export default function Home() {
         open={isSelectionDialogOpen}
         onOpenChange={setIsSelectionDialogOpen}
       >
-        <AlertDialogContent className="rounded-lg">
+        <AlertDialogContent className="rounded-lg bg-background">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
             <AlertDialogDescription>
@@ -675,7 +680,7 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg bg-background">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl md:text-2xl">
                 Analysis Result

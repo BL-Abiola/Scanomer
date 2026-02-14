@@ -18,11 +18,11 @@ export async function generateQrContent(
 ): Promise<string> {
   const ai = genkit({
     plugins: [googleAI({ apiKey })],
-    model: 'googleai/gemini-2.5-flash',
   });
 
   const generationPrompt = ai.definePrompt({
     name: 'generateQrPrompt_perRequest',
+    model: 'googleai/gemini-2.5-flash',
     input: { schema: GenerateQrInputSchema },
     output: { schema: GenerateQrOutputSchema },
     prompt: `You are an expert QR code content formatter. Your task is to convert a user's prompt into the correct string format for a QR code.

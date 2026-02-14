@@ -288,7 +288,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen w-full bg-background">
-        <header className="sticky top-0 z-20 border-b bg-background">
+        <header className="sticky top-0 z-20 border-b bg-card">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
@@ -309,7 +309,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg bg-background">
+                <DialogContent className="sm:max-w-md rounded-lg bg-card">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -526,7 +526,7 @@ export default function Home() {
                                 <FormLabel>Describe the QR Code</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="e.g., a URL, 'wifi for MyNet, pass: 123', or 'vcard for John Doe'"
+                                    placeholder="e.g., a URL, 'wifi for MyNet', or a vCard..."
                                     className="resize-y"
                                     {...field}
                                   />
@@ -642,7 +642,7 @@ export default function Home() {
         open={isSelectionDialogOpen}
         onOpenChange={setIsSelectionDialogOpen}
       >
-        <AlertDialogContent className="rounded-lg bg-background">
+        <AlertDialogContent className="rounded-lg bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
             <AlertDialogDescription>
@@ -680,7 +680,7 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg bg-background">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg bg-card">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl md:text-2xl">
                 Analysis Result

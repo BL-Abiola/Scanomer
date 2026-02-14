@@ -44,6 +44,11 @@ export async function generateQrAction(
         'Your Google AI API key is invalid. Please check it in settings.'
       );
     }
+    if (e.message?.includes('AI returned an empty response')) {
+      throw new Error(
+        'The AI could not process the request. Please try rephrasing it.'
+      );
+    }
     throw new Error('The AI service failed to process your request.');
   }
 }

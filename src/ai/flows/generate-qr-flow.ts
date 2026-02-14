@@ -18,7 +18,7 @@ export async function generateQrContent(
   });
 
   const { text } = await ai.generate({
-    model: 'googleai/gemini-2.5-flash',
+    model: 'gemini-1.5-flash-latest',
     prompt: `You are an expert QR code content formatter. Your task is to convert a user's prompt into the correct string format for a QR code.
 
 Supported formats:
@@ -31,7 +31,7 @@ Supported formats:
 - Plain Text: Any string that doesn't match the above.
 
 Instructions:
-1.  Analyze the user's prompt: ${prompt}.
+1.  Analyze the user's prompt: "${prompt}".
 2.  If the prompt is already a valid URL, email address, phone number, or simple text, return it exactly as is.
 3.  If the prompt is a natural language request (e.g., "wifi for my network 'MyCafe' with password 'secret'"), convert it to the corresponding technical format.
 4.  For vCards, extract as much information as possible (Name, Phone, Email).
@@ -45,5 +45,11 @@ Examples:
 `,
   });
 
-  return text || prompt;
+  const resultText = text?.trim();
+
+  if (!resultText) {
+    throw new Error('AI returned an empty response.');
+  }
+
+  return resultText;
 }

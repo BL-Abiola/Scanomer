@@ -7,26 +7,18 @@
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'genkit';
-
-const GenerateQrInputSchema = z.object({
-  prompt: z.string(),
-});
-const GenerateQrOutputSchema = z.string();
 
 export async function generateQrContent(
   prompt: string,
   apiKey: string
 ): Promise<string> {
+  // A temporary AI instance is created for each request using the provided API key.
   const ai = genkit({
     plugins: [googleAI({ apiKey })],
   });
 
-  const generationPrompt = ai.definePrompt({
-    name: 'generateQrPrompt_perRequest',
+  const { text } = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
-    input: { schema: GenerateQrInputSchema },
-    output: { schema: GenerateQrOutputSchema },
     prompt: `You are an expert QR code content formatter. Your task is to convert a user's prompt into the correct string format for a QR code.
 
 Supported formats:
@@ -39,7 +31,7 @@ Supported formats:
 - Plain Text: Any string that doesn't match the above.
 
 Instructions:
-1.  Analyze the user's prompt: {{{prompt}}}.
+1.  Analyze the user's prompt: ${prompt}.
 2.  If the prompt is already a valid URL, email address, phone number, or simple text, return it exactly as is.
 3.  If the prompt is a natural language request (e.g., "wifi for my network 'MyCafe' with password 'secret'"), convert it to the corresponding technical format.
 4.  For vCards, extract as much information as possible (Name, Phone, Email).
@@ -53,6 +45,5 @@ Examples:
 `,
   });
 
-  const { output } = await generationPrompt({ prompt });
-  return output || prompt;
+  return text || prompt;
 }

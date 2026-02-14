@@ -281,7 +281,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen w-full">
-        <header className="fixed top-0 left-0 right-0 z-20 border-b bg-background/80 backdrop-blur-lg">
+        <header className="fixed top-0 left-0 right-0 z-20 border-b bg-background">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <QrCode className="h-8 w-8 text-primary" />
@@ -302,7 +302,7 @@ export default function Home() {
                     <span className="sr-only">Settings</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
+                <DialogContent className="sm:max-w-md rounded-lg shadow-2xl shadow-black/20">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -357,7 +357,7 @@ export default function Home() {
 
         <main className="container mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 px-4 pt-24 pb-8 lg:grid-cols-3 lg:gap-8">
           <div className="w-full lg:sticky lg:top-24 lg:col-span-1">
-            <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <Card className="shadow-2xl shadow-black/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <QrCode className="h-6 w-6" />
@@ -539,7 +539,7 @@ export default function Home() {
           </div>
 
           <aside className="w-full lg:col-span-2">
-            <Card className="shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <Card className="shadow-2xl shadow-black/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <History className="h-6 w-6" />
@@ -586,7 +586,7 @@ export default function Home() {
         open={isSelectionDialogOpen}
         onOpenChange={setIsSelectionDialogOpen}
       >
-        <AlertDialogContent className="rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <AlertDialogContent className="rounded-lg shadow-2xl shadow-black/20">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose Input Method</AlertDialogTitle>
             <AlertDialogDescription>
@@ -624,7 +624,7 @@ export default function Home() {
             if (!isOpen) setActiveAnalysis(null);
           }}
         >
-          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-2xl shadow-black/20 backdrop-blur-xl">
+          <AlertDialogContent className="max-w-md md:max-w-xl rounded-lg shadow-2xl shadow-black/20">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl md:text-2xl">
                 Analysis Result

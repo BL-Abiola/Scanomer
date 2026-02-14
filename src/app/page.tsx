@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -664,8 +665,8 @@ export default function Home() {
                     <Skeleton className="h-20 w-full rounded-lg" />
                   </div>
                 ) : scanHistory.length > 0 ? (
-                  <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)]">
-                    <div className="space-y-3">
+                  <ScrollArea className="h-[60vh] lg:h-[calc(100vh-22rem)] -mx-6">
+                    <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
                       {scanHistory.map((item, index) => (
                         <HistoryItem
                           key={`${item.qrContent}-${index}`}
@@ -676,7 +677,7 @@ export default function Home() {
                     </div>
                   </ScrollArea>
                 ) : (
-                  <div className="flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center lg:h-[calc(100vh-22rem)]">
+                  <div className="flex h-[60vh] flex-col items-center justify-center rounded-lg border-2 border-dashed text-center lg:h-[calc(100vh-22rem)]">
                     <History className="h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">
                       No Scans Yet

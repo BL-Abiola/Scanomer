@@ -9,7 +9,9 @@ import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'genkit';
 
-const GenerateQrInputSchema = z.string();
+const GenerateQrInputSchema = z.object({
+  prompt: z.string(),
+});
 const GenerateQrOutputSchema = z.string();
 
 export async function generateQrContent(
@@ -51,6 +53,6 @@ Examples:
 `,
   });
 
-  const { output } = await generationPrompt(prompt);
+  const { output } = await generationPrompt({ prompt });
   return output || prompt;
 }

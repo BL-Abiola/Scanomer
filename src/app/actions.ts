@@ -27,6 +27,11 @@ export async function generateQrAction(
     return null;
   }
   try {
+    // The API key is set as an environment variable on the server process
+    // when the user saves it in the settings. For this action, we rely on it being available.
+    if (!process.env.GOOGLE_API_KEY) {
+      throw new Error('API Key not configured on the server.');
+    }
     const result = await generateQrContent(prompt);
     return result;
   } catch (error) {
@@ -34,3 +39,5 @@ export async function generateQrAction(
     return null;
   }
 }
+
+    

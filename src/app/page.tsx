@@ -20,6 +20,7 @@ import {
   Info,
   Download,
   Mail,
+  KeyRound,
 } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -73,6 +74,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { HistoryItem } from '@/components/history-item';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   qrContent: z.string().min(1, 'QR code content cannot be empty.'),
@@ -110,12 +112,19 @@ export default function Home() {
     null
   );
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState('');
+  const [inputApiKey, setInputApiKey] = React.useState('');
 
   // On mount, load settings from local storage
   React.useEffect(() => {
     const storedTheme = localStorage.getItem('scanomer-theme');
     if (storedTheme === 'dark' || storedTheme === 'light') {
       setTheme(storedTheme);
+    }
+    const storedApiKey = localStorage.getItem('scanomer-api-key');
+    if (storedApiKey) {
+      setApiKey(storedApiKey);
+      setInputApiKey(storedApiKey);
     }
   }, []);
 
@@ -142,6 +151,15 @@ export default function Home() {
       prompt: '',
     },
   });
+
+  const handleSaveApiKey = React.useCallback(() => {
+    localStorage.setItem('scanomer-api-key', inputApiKey);
+    setApiKey(inputApiKey);
+    toast({
+      title: 'API Key Saved',
+      description: 'Your Google AI API key has been saved successfully.',
+    });
+  }, [inputApiKey, toast]);
 
   const onAnalyzeSubmit = React.useCallback(
     async (values: z.infer<typeof formSchema>) => {
@@ -177,6 +195,17 @@ export default function Home() {
     async (values: z.infer<typeof qrGenerationFormSchema>) => {
       setIsGenerating(true);
       setGeneratedQrCode(null);
+      
+      if (!apiKey) {
+        toast({
+          variant: 'destructive',
+          title: 'API Key Required',
+          description: 'Please add your Google AI API key in the settings to use this feature.',
+        });
+        setIsGenerating(false);
+        return;
+      }
+      
       try {
         const formattedContent = await generateQrAction(values.prompt);
         if (!formattedContent) {
@@ -201,7 +230,7 @@ export default function Home() {
         setIsGenerating(false);
       }
     },
-    [toast]
+    [toast, apiKey]
   );
 
   const handleDownloadQr = React.useCallback(() => {
@@ -317,7 +346,7 @@ export default function Home() {
                     </DialogDescription>
                   </DialogHeader>
                   <Tabs defaultValue="appearance" className="w-full pt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="appearance">
                         <Palette className="mr-2 h-5 w-5" />
                         Appearance
@@ -325,6 +354,10 @@ export default function Home() {
                       <TabsTrigger value="about">
                         <Info className="mr-2 h-5 w-5" />
                         About
+                      </TabsTrigger>
+                      <TabsTrigger value="api-key">
+                        <KeyRound className="mr-2 h-5 w-5" />
+                        API Key
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="appearance" className="pt-4">
@@ -400,6 +433,30 @@ export default function Home() {
                               Email
                             </a>
                           </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="api-key" className="pt-4">
+                      <div className="grid gap-4">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-foreground">
+                            Google AI API Key
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            A Google AI API key is required for the AI-powered generation features. Your key is stored securely in your browser's local storage and is never shared.
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Input
+                            id="apiKey"
+                            type="password"
+                            value={inputApiKey}
+                            onChange={(e) => setInputApiKey(e.target.value)}
+                            placeholder="Enter your API key"
+                          />
+                          <Button type="submit" onClick={handleSaveApiKey}>
+                            Save
+                          </Button>
                         </div>
                       </div>
                     </TabsContent>
@@ -718,3 +775,5 @@ export default function Home() {
     </>
   );
 }
+
+    

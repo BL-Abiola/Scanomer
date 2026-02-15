@@ -1,0 +1,7 @@
+{
+  "name": "Scanrust",
+  "description": "Zero-trust, privacy-first QR code inspection and generation suite with heuristic risk scoring and AI-assisted payload analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
